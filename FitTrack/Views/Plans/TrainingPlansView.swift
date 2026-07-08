@@ -4,6 +4,8 @@ import SwiftData
 struct TrainingPlansView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TrainingPlan.createdAt, order: .reverse) private var plans: [TrainingPlan]
+    @State private var showingGenerator = false
+    @State private var createdPlan: TrainingPlan?
 
     var body: some View {
         NavigationStack {
@@ -18,10 +20,19 @@ struct TrainingPlansView: View {
             .navigationTitle("Trainingspläne")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        addPlan()
+                    Menu {
+                        Button {
+                            addPlan()
+                        } label: {
+                            Label("Leerer Plan", systemImage: "plus")
+                        }
+                        Button {
+                            showingGenerator = true
+                        } label: {
+                            Label("Plan erstellen lassen", systemImage: "wand.and.stars")
+                        }
                     } label: {
-                        Label("Neuer Plan", systemImage: "plus")
+                        Image(systemName: "plus")
                     }
                 }
             }
@@ -29,6 +40,14 @@ struct TrainingPlansView: View {
                 if plans.isEmpty {
                     ContentUnavailableView("Noch keine Pläne", systemImage: "list.bullet.clipboard", description: Text("Erstelle deinen ersten Trainingsplan."))
                 }
+            }
+            .sheet(isPresented: $showingGenerator) {
+                GeneratePlanView { plan in
+                    createdPlan = plan
+                }
+            }
+            .navigationDestination(item: $createdPlan) { plan in
+                PlanDetailView(plan: plan)
             }
         }
     }

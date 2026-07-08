@@ -34,6 +34,12 @@ private struct LiveExercise: Identifiable {
 /// auf der Watch).
 struct ActiveWorkoutView: View {
     let planDay: PlanDay?
+    /// Explizite Referenz auf den Plans-Container (der `planDay`/`PlanItem`
+    /// gehören), um dort das Gewichts-/Wdh.-Gedächtnis zu sichern. `nil` bei
+    /// spontanen Trainings ohne Plan. `@Environment(\.modelContext)` reicht
+    /// hierfür nicht, da diese View für den Trainings-Verlauf explizit auf
+    /// den History-Container umgehängt wird (siehe `PlanDayDetailView`).
+    var planItemContext: ModelContext? = nil
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -352,12 +358,21 @@ struct ActiveWorkoutView: View {
     /// nächsten Mal automatisch damit vorausgefüllt ist - unabhängig davon,
     /// wie dieselbe Übung in einem anderen Plan oder Trainingstag geführt wird.
     private func updatePlanMemory() {
+        var didChange = false
         for live in liveExercises {
             guard let planItem = live.planItem else { continue }
             let completedWorkSets = live.sets.filter { $0.isCompleted && !$0.isWarmup }
             guard let lastSet = completedWorkSets.last else { continue }
             planItem.targetWeightKg = lastSet.weightKg
             planItem.targetReps = lastSet.reps
+            didChange = true
+        }
+        // `planItem` gehört zum Plans-Container, nicht zum hier ambient
+        // angehängten History-Container (siehe `planItemContext`-Kommentar
+        // oben) - deshalb hier explizit auf der richtigen Context-Referenz
+        // sichern, statt uns auf den Autosave des (falschen) `modelContext` zu verlassen.
+        if didChange {
+            try? planItemContext?.save()
         }
     }
 }

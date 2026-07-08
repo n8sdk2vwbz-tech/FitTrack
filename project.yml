@@ -53,7 +53,14 @@ targets:
         INFOPLIST_FILE: FitTrackWatch/Info.plist
         CODE_SIGN_ENTITLEMENTS: FitTrackWatch/FitTrackWatch.entitlements
         TARGETED_DEVICE_FAMILY: "4"
-        SKIP_INSTALL: NO
+        # YES (Standard für eingebettete Watch-Apps): verhindert, dass die
+        # Watch-App beim Archivieren zusätzlich als eigenständiges Top-Level-
+        # Produkt "installiert" wird - sonst sieht das Archiv wie zwei
+        # getrennte Apps aus und Xcode erkennt es nicht mehr als verteilbares
+        # App-Archiv (TestFlight/App Store). Simulator-/Geräte-Installs beim
+        # normalen Bauen sind davon nicht betroffen, die laufen direkt über
+        # den Build-Products-Pfad, nicht über diesen "Install"-Schritt.
+        SKIP_INSTALL: YES
         WATCHOS_DEPLOYMENT_TARGET: "10.0"
 
 schemes:

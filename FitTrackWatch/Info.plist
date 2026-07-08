@@ -15,7 +15,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleDisplayName</key>
-	<string>FitTrack</string>
+	<string>ReadyLift</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -31,9 +31,9 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>NSHealthShareUsageDescription</key>
-	<string>FitTrack liest Herzfrequenz-, Schlaf- und Aktivitätsdaten für Live-Werte während des Trainings.</string>
+	<string>ReadyLift liest Herzfrequenz-, Schlaf- und Aktivitätsdaten für Live-Werte während des Trainings.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>FitTrack speichert dein Workout in Health, sobald du es beendest.</string>
+	<string>ReadyLift speichert dein Workout in Health, sobald du es beendest.</string>
 	<key>WKBackgroundModes</key>
 	<array>
 		<string>workout-processing</string>

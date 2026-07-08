@@ -11,6 +11,7 @@
 		071074D98643CE9F97D18EFC /* RemoteMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */; };
 		1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1619974B38585E7316A89052 /* IntAdjuster.swift */; };
 		17FBEFF306341CA43C6110A1 /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3899B6473B8E615422764613 /* WorkoutModels.swift */; };
+		1F9024259FBEAF011B328154 /* GeneratePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253C621FEB179B544870220D /* GeneratePlanView.swift */; };
 		29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */; };
 		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
 		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
@@ -38,6 +39,7 @@
 		D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */; };
 		D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A21AA286B21409EFB3A531 /* RootView.swift */; };
 		E8DE442F1DEE614523085559 /* LiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */; };
+		F7C9315E9EBE2E1D8DB1EA3E /* AppContainers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */; };
 		FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */; };
 /* End PBXBuildFile section */
 
@@ -76,6 +78,8 @@
 		181778660D0A233239C1AEE8 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDayDetailView.swift; sourceTree = "<group>"; };
 		1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		1CBBCECF0CA54BDD0785ECDE /* FitTrackDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackDebug.entitlements; sourceTree = "<group>"; };
+		253C621FEB179B544870220D /* GeneratePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratePlanView.swift; sourceTree = "<group>"; };
 		3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlansView.swift; sourceTree = "<group>"; };
 		3899B6473B8E615422764613 /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
@@ -96,6 +100,7 @@
 		B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
 		B8111A1D48406ECDA1841684 /* FitTrackWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitTrackWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkoutView.swift; sourceTree = "<group>"; };
+		C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainers.swift; sourceTree = "<group>"; };
 		CE225AB1AA73FA6D00182295 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitImportService.swift; sourceTree = "<group>"; };
 		D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWatchApp.swift; sourceTree = "<group>"; };
@@ -207,6 +212,7 @@
 		9B6942028129A3B4EE98E28C /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */,
 				A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */,
 				68A21AA286B21409EFB3A531 /* RootView.swift */,
 			);
@@ -228,6 +234,7 @@
 			isa = PBXGroup;
 			children = (
 				5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */,
+				1CBBCECF0CA54BDD0785ECDE /* FitTrackDebug.entitlements */,
 				125578C49FC616DBEE8F83AF /* Info.plist */,
 				9B6942028129A3B4EE98E28C /* App */,
 				F797FA91D40F8592BAA6597C /* Models */,
@@ -240,6 +247,7 @@
 		A6D4113687E5066425FC0DAF /* Plans */ = {
 			isa = PBXGroup;
 			children = (
+				253C621FEB179B544870220D /* GeneratePlanView.swift */,
 				1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */,
 				76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */,
 				3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */,
@@ -406,6 +414,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */,
+				F7C9315E9EBE2E1D8DB1EA3E /* AppContainers.swift in Sources */,
 				A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */,
 				50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */,
 				78E652A8D396F93DC8890682 /* EffortRatingView.swift in Sources */,
@@ -413,6 +422,7 @@
 				D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */,
 				2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */,
 				CEC6B2A2BFC4004002B33864 /* FitTrackApp.swift in Sources */,
+				1F9024259FBEAF011B328154 /* GeneratePlanView.swift in Sources */,
 				9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */,
 				1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */,
 				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
@@ -479,7 +489,7 @@
 				INFOPLIST_FILE = FitTrackWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.watchkitapp;
 				SDKROOT = watchos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
@@ -493,7 +503,7 @@
 				INFOPLIST_FILE = FitTrackWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.watchkitapp;
 				SDKROOT = watchos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};

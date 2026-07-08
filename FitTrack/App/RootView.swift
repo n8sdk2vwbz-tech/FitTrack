@@ -16,6 +16,7 @@ struct RootView: View {
                 .tabItem { Label("Übungen", systemImage: "figure.strengthtraining.traditional") }
 
             TrainingPlansView()
+                .modelContainer(AppContainers.plans)
                 .tabItem { Label("Pläne", systemImage: "list.bullet.clipboard") }
 
             WorkoutHistoryView()

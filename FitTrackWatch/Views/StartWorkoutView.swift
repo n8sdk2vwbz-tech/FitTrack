@@ -10,7 +10,7 @@ struct StartWorkoutView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
-                Text("FitTrack").font(.headline)
+                Text("ReadyLift").font(.headline)
 
                 if let plan = connectivity.receivedPlanDay {
                     VStack(alignment: .leading, spacing: 4) {
@@ -36,7 +36,7 @@ struct StartWorkoutView: View {
                     Label("Kraft – Schnellstart", systemImage: "figure.strengthtraining.traditional")
                 }
 
-                Text("Für Laufen, Radfahren & Co. die Apple Watch Workout-App nutzen – die Einheit erscheint danach automatisch in FitTrack.")
+                Text("Für Laufen, Radfahren & Co. die Apple Watch Workout-App nutzen – die Einheit erscheint danach automatisch in ReadyLift.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

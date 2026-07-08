@@ -65,7 +65,14 @@ struct PlanDayDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $isStartingWorkout) {
-            ActiveWorkoutView(planDay: day)
+            // `day`/`PlanItem` gehören zum (hier aktiven) Plans-Container -
+            // `planItemContext` gibt ActiveWorkoutView eine explizite
+            // Referenz darauf, um Gewichts-/Wdh.-Gedächtnis dort zu sichern.
+            // Der Trainings-Verlauf selbst gehört in den History-Container,
+            // der hier explizit wieder angehängt wird (sonst würde die neue
+            // WorkoutSession versehentlich in den Plans-Container geschrieben).
+            ActiveWorkoutView(planDay: day, planItemContext: modelContext)
+                .modelContainer(AppContainers.history)
         }
     }
 
