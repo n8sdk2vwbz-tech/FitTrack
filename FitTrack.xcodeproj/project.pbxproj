@@ -1,0 +1,704 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */; };
+		071074D98643CE9F97D18EFC /* RemoteMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */; };
+		1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1619974B38585E7316A89052 /* IntAdjuster.swift */; };
+		17FBEFF306341CA43C6110A1 /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3899B6473B8E615422764613 /* WorkoutModels.swift */; };
+		29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */; };
+		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
+		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
+		40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */; };
+		42C72242A3B32535E2099818 /* StartWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */; };
+		44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */; };
+		4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */; };
+		50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BC6733088F129EF3878DAB /* DashboardViewModel.swift */; };
+		52AB611343B24A086BA267E5 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E018B0F76B185194F92BAF45 /* WorkoutManager.swift */; };
+		581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */; };
+		5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */; };
+		6F3A77E070D07D528EB1C5C5 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55458F2FF281E4BF301C4BB3 /* SummaryView.swift */; };
+		7302788ABF8BE9BBE5DC450A /* TrainingPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */; };
+		78E652A8D396F93DC8890682 /* EffortRatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629EC6F7CF970A556C46F397 /* EffortRatingView.swift */; };
+		7AEE400C5239E9443436E34E /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = 143C1BBE66AC584AED8FBD90 /* FitTrackShared */; };
+		81A56FB40516EC9B06C8CD5D /* PlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */; };
+		8F656A22F3C0CDD8A6840CA1 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */; };
+		95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0EB6D74DC3DB7E80C889336A /* Assets.xcassets */; };
+		9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */; };
+		A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181778660D0A233239C1AEE8 /* DashboardView.swift */; };
+		BAF2E6C04A28239FA47C916B /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = A226CB3FDA21209397ACF82D /* FitTrackShared */; };
+		C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */; };
+		C3E8DAC7ADCA94692F8F1FFB /* FitTrackWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B8111A1D48406ECDA1841684 /* FitTrackWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CEC6B2A2BFC4004002B33864 /* FitTrackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */; };
+		D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */; };
+		D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A21AA286B21409EFB3A531 /* RootView.swift */; };
+		E8DE442F1DEE614523085559 /* LiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */; };
+		FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F2B235F23C914D3B31ADFD14 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 15D5670798217E89438AFDD1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 563C6831FBBB8C2021E9C8FB;
+			remoteInfo = FitTrackWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D0409F697B1825A530936EA4 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				C3E8DAC7ADCA94692F8F1FFB /* FitTrackWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		053108AC8BBB9B65EBA44741 /* FitTrack.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FitTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		06BC6733088F129EF3878DAB /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		08F2E63D3FAFD0F059A271B1 /* Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shared; path = Shared; sourceTree = SOURCE_ROOT; };
+		0EB6D74DC3DB7E80C889336A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		125578C49FC616DBEE8F83AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		1619974B38585E7316A89052 /* IntAdjuster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntAdjuster.swift; sourceTree = "<group>"; };
+		181778660D0A233239C1AEE8 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDayDetailView.swift; sourceTree = "<group>"; };
+		1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlansView.swift; sourceTree = "<group>"; };
+		3899B6473B8E615422764613 /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
+		3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
+		3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleHeatmapView.swift; sourceTree = "<group>"; };
+		55458F2FF281E4BF301C4BB3 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrack.entitlements; sourceTree = "<group>"; };
+		5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
+		5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartWorkoutView.swift; sourceTree = "<group>"; };
+		629EC6F7CF970A556C46F397 /* EffortRatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffortRatingView.swift; sourceTree = "<group>"; };
+		67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePickerView.swift; sourceTree = "<group>"; };
+		68A21AA286B21409EFB3A531 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		6900AE00BE8DF8FF3EC40423 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDetailView.swift; sourceTree = "<group>"; };
+		7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadinessRingView.swift; sourceTree = "<group>"; };
+		9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightAdjuster.swift; sourceTree = "<group>"; };
+		A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackApp.swift; sourceTree = "<group>"; };
+		B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
+		B8111A1D48406ECDA1841684 /* FitTrackWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitTrackWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkoutView.swift; sourceTree = "<group>"; };
+		CE225AB1AA73FA6D00182295 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitImportService.swift; sourceTree = "<group>"; };
+		D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWatchApp.swift; sourceTree = "<group>"; };
+		E018B0F76B185194F92BAF45 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
+		F8F50216CAB8ACCF4AB7F0DB /* FitTrackWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackWatch.entitlements; sourceTree = "<group>"; };
+		FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteMonitoringView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AB27F92415604AA5DBF29A1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7AEE400C5239E9443436E34E /* FitTrackShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF2C9E31E7A4151E26C25FD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BAF2E6C04A28239FA47C916B /* FitTrackShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2A5A74B90772D185C84E5E68 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				629EC6F7CF970A556C46F397 /* EffortRatingView.swift */,
+				67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */,
+				1619974B38585E7316A89052 /* IntAdjuster.swift */,
+				9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		301EE577968C3139AEBF90AF = {
+			isa = PBXGroup;
+			children = (
+				9FB3C778B1465DF47506BDE5 /* FitTrack */,
+				AB5EE52A1C2D7A50F7C401F4 /* FitTrackWatch */,
+				CDBE3E6472C52E0B9B97AE9C /* Packages */,
+				AEA38702B705DAEA72C53EAD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		33A3C124F825DDF7AB0150DB /* Exercises */ = {
+			isa = PBXGroup;
+			children = (
+				0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */,
+				7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */,
+			);
+			path = Exercises;
+			sourceTree = "<group>";
+		};
+		503336015120765F6B62129B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0EB6D74DC3DB7E80C889336A /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		5E7E11DFF5CF4F92D2E0B107 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				CE225AB1AA73FA6D00182295 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7ACE06865541C6617F6A8F3D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */,
+				FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */,
+				5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */,
+				55458F2FF281E4BF301C4BB3 /* SummaryView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7B4F14485281D51F438F2296 /* Workouts */ = {
+			isa = PBXGroup;
+			children = (
+				1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */,
+				BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */,
+				5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */,
+				3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */,
+			);
+			path = Workouts;
+			sourceTree = "<group>";
+		};
+		9AE3D13751DE40A717203B67 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A5A74B90772D185C84E5E68 /* Components */,
+				9D81E82699DFD43A5DA32348 /* Dashboard */,
+				33A3C124F825DDF7AB0150DB /* Exercises */,
+				A6D4113687E5066425FC0DAF /* Plans */,
+				7B4F14485281D51F438F2296 /* Workouts */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9B6942028129A3B4EE98E28C /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */,
+				68A21AA286B21409EFB3A531 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9D81E82699DFD43A5DA32348 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				181778660D0A233239C1AEE8 /* DashboardView.swift */,
+				06BC6733088F129EF3878DAB /* DashboardViewModel.swift */,
+				3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */,
+				91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		9FB3C778B1465DF47506BDE5 /* FitTrack */ = {
+			isa = PBXGroup;
+			children = (
+				5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */,
+				125578C49FC616DBEE8F83AF /* Info.plist */,
+				9B6942028129A3B4EE98E28C /* App */,
+				F797FA91D40F8592BAA6597C /* Models */,
+				5E7E11DFF5CF4F92D2E0B107 /* Resources */,
+				9AE3D13751DE40A717203B67 /* Views */,
+			);
+			path = FitTrack;
+			sourceTree = "<group>";
+		};
+		A6D4113687E5066425FC0DAF /* Plans */ = {
+			isa = PBXGroup;
+			children = (
+				1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */,
+				76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */,
+				3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */,
+			);
+			path = Plans;
+			sourceTree = "<group>";
+		};
+		AB5EE52A1C2D7A50F7C401F4 /* FitTrackWatch */ = {
+			isa = PBXGroup;
+			children = (
+				F8F50216CAB8ACCF4AB7F0DB /* FitTrackWatch.entitlements */,
+				6900AE00BE8DF8FF3EC40423 /* Info.plist */,
+				E018B0F76B185194F92BAF45 /* WorkoutManager.swift */,
+				E7C2758B62E8570F5F52DC9A /* App */,
+				503336015120765F6B62129B /* Resources */,
+				7ACE06865541C6617F6A8F3D /* Views */,
+			);
+			path = FitTrackWatch;
+			sourceTree = "<group>";
+		};
+		AEA38702B705DAEA72C53EAD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				053108AC8BBB9B65EBA44741 /* FitTrack.app */,
+				B8111A1D48406ECDA1841684 /* FitTrackWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CDBE3E6472C52E0B9B97AE9C /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				08F2E63D3FAFD0F059A271B1 /* Shared */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		E7C2758B62E8570F5F52DC9A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F797FA91D40F8592BAA6597C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */,
+				3899B6473B8E615422764613 /* WorkoutModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		563C6831FBBB8C2021E9C8FB /* FitTrackWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A9D0FBA11A9FA90A9007F235 /* Build configuration list for PBXNativeTarget "FitTrackWatch" */;
+			buildPhases = (
+				91B21E7A31C60EF22E9BFB5F /* Sources */,
+				8B85217CB7CE1195F275194B /* Resources */,
+				AB27F92415604AA5DBF29A1A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FitTrackWatch;
+			packageProductDependencies = (
+				143C1BBE66AC584AED8FBD90 /* FitTrackShared */,
+			);
+			productName = FitTrackWatch;
+			productReference = B8111A1D48406ECDA1841684 /* FitTrackWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D255A6C7D5D446F750DA7FED /* FitTrack */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3B4A6B7657E5CB7FD38F812 /* Build configuration list for PBXNativeTarget "FitTrack" */;
+			buildPhases = (
+				522D69FECDF3C6955ABB05AD /* Sources */,
+				ACC500B6C58C6C6D9B7163C5 /* Resources */,
+				AF2C9E31E7A4151E26C25FD4 /* Frameworks */,
+				D0409F697B1825A530936EA4 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5E029840DCBFEAFC2324DBC8 /* PBXTargetDependency */,
+			);
+			name = FitTrack;
+			packageProductDependencies = (
+				A226CB3FDA21209397ACF82D /* FitTrackShared */,
+			);
+			productName = FitTrack;
+			productReference = 053108AC8BBB9B65EBA44741 /* FitTrack.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		15D5670798217E89438AFDD1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					563C6831FBBB8C2021E9C8FB = {
+						DevelopmentTeam = 8936F2R3FF;
+						ProvisioningStyle = Automatic;
+					};
+					D255A6C7D5D446F750DA7FED = {
+						DevelopmentTeam = 8936F2R3FF;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 2DE973B4615ED6F7AD148BC7 /* Build configuration list for PBXProject "FitTrack" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 301EE577968C3139AEBF90AF;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DBA1DA9DB1AAD0DE1EF73FB1 /* XCLocalSwiftPackageReference "Shared" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AEA38702B705DAEA72C53EAD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D255A6C7D5D446F750DA7FED /* FitTrack */,
+				563C6831FBBB8C2021E9C8FB /* FitTrackWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8B85217CB7CE1195F275194B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACC500B6C58C6C6D9B7163C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		522D69FECDF3C6955ABB05AD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */,
+				A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */,
+				50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */,
+				78E652A8D396F93DC8890682 /* EffortRatingView.swift in Sources */,
+				4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */,
+				D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */,
+				2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */,
+				CEC6B2A2BFC4004002B33864 /* FitTrackApp.swift in Sources */,
+				9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */,
+				1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */,
+				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
+				5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */,
+				049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */,
+				81A56FB40516EC9B06C8CD5D /* PlanDetailView.swift in Sources */,
+				44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */,
+				D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */,
+				7302788ABF8BE9BBE5DC450A /* TrainingPlansView.swift in Sources */,
+				581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */,
+				C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */,
+				8F656A22F3C0CDD8A6840CA1 /* WorkoutHistoryView.swift in Sources */,
+				17FBEFF306341CA43C6110A1 /* WorkoutModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		91B21E7A31C60EF22E9BFB5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */,
+				E8DE442F1DEE614523085559 /* LiveWorkoutView.swift in Sources */,
+				071074D98643CE9F97D18EFC /* RemoteMonitoringView.swift in Sources */,
+				42C72242A3B32535E2099818 /* StartWorkoutView.swift in Sources */,
+				6F3A77E070D07D528EB1C5C5 /* SummaryView.swift in Sources */,
+				52AB611343B24A086BA267E5 /* WorkoutManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5E029840DCBFEAFC2324DBC8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 563C6831FBBB8C2021E9C8FB /* FitTrackWatch */;
+			targetProxy = F2B235F23C914D3B31ADFD14 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		34ACA5F35B812A7DA184ABF5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitTrack/FitTrack.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = FitTrack/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		5D60881288F76F107A4D6400 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitTrackWatch/FitTrackWatch.entitlements;
+				INFOPLIST_FILE = FitTrackWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.watchkitapp;
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		6A2F101B4423BA8821F5F697 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitTrackWatch/FitTrackWatch.entitlements;
+				INFOPLIST_FILE = FitTrackWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.watchkitapp;
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		C3C7D85B3B9A0EBDFA76DB0B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8936F2R3FF;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		C61039398119BC5109C7E733 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8936F2R3FF;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		E5967CF56F8F3C8078B379C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitTrack/FitTrack.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = FitTrack/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2DE973B4615ED6F7AD148BC7 /* Build configuration list for PBXProject "FitTrack" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C3C7D85B3B9A0EBDFA76DB0B /* Debug */,
+				C61039398119BC5109C7E733 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A9D0FBA11A9FA90A9007F235 /* Build configuration list for PBXNativeTarget "FitTrackWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D60881288F76F107A4D6400 /* Debug */,
+				6A2F101B4423BA8821F5F697 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D3B4A6B7657E5CB7FD38F812 /* Build configuration list for PBXNativeTarget "FitTrack" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E5967CF56F8F3C8078B379C1 /* Debug */,
+				34ACA5F35B812A7DA184ABF5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		DBA1DA9DB1AAD0DE1EF73FB1 /* XCLocalSwiftPackageReference "Shared" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Shared;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		143C1BBE66AC584AED8FBD90 /* FitTrackShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FitTrackShared;
+		};
+		A226CB3FDA21209397ACF82D /* FitTrackShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FitTrackShared;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 15D5670798217E89438AFDD1 /* Project object */;
+}
