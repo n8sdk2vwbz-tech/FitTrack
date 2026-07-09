@@ -132,8 +132,36 @@ private struct PlanItemRow: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+            if !item.alternativeExerciseIds.isEmpty {
+                Menu {
+                    ForEach(item.alternativeExerciseIds.indices, id: \.self) { index in
+                        Button(item.alternativeExerciseNames[index]) {
+                            swapToAlternative(at: index)
+                        }
+                    }
+                } label: {
+                    Label("Alternative statt \"\(item.exerciseName)\"", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.caption)
+                }
+            }
         }
         .padding(.vertical, 4)
+    }
+
+    /// Tauscht die Übung gegen die gewählte Alternative - die bisherige
+    /// Übung rückt an deren Stelle in die Alternativen-Liste, damit man
+    /// jederzeit wieder zurückwechseln kann.
+    private func swapToAlternative(at index: Int) {
+        let newId = item.alternativeExerciseIds[index]
+        let newName = item.alternativeExerciseNames[index]
+        var ids = item.alternativeExerciseIds
+        var names = item.alternativeExerciseNames
+        ids[index] = item.exerciseId
+        names[index] = item.exerciseName
+        item.exerciseId = newId
+        item.exerciseName = newName
+        item.alternativeExerciseIds = ids
+        item.alternativeExerciseNames = names
     }
 
     private func compactStepper(label: String, value: Binding<Int>, range: ClosedRange<Int>) -> some View {

@@ -63,7 +63,10 @@ public enum SessionDuration: String, CaseIterable, Identifiable, Codable {
 public enum SplitType: String, CaseIterable, Identifiable, Codable {
     case fullBody
     case upperLower
+    case pushPull
     case pushPullLegs
+    case arnoldSplit
+    case upperLowerPushPullLegs
     case bodyPart
 
     public var id: String { rawValue }
@@ -72,7 +75,10 @@ public enum SplitType: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .fullBody: return "Ganzkörper"
         case .upperLower: return "Oberkörper / Unterkörper"
+        case .pushPull: return "Push / Pull"
         case .pushPullLegs: return "Push / Pull / Legs"
+        case .arnoldSplit: return "Arnold-Split"
+        case .upperLowerPushPullLegs: return "Oberkörper/Unterkörper + Push/Pull/Legs"
         case .bodyPart: return "Muskelgruppen-Split (je Tag ein Fokus)"
         }
     }
@@ -81,7 +87,10 @@ public enum SplitType: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .fullBody: return "Jede Einheit trainiert den ganzen Körper - gut bei 2-3 Trainingstagen/Woche."
         case .upperLower: return "Wechsel zwischen Ober- und Unterkörper - gut bei 4 Trainingstagen/Woche."
+        case .pushPull: return "Zwei Einheiten im Wechsel: Drückbewegungen (inkl. Quads) und Zugbewegungen (inkl. Beinrückseite) - gut bei 2-4 Trainingstagen/Woche."
         case .pushPullLegs: return "Drück-, Zug- und Beinübungen getrennt - gut ab 3, ideal bei 6 Trainingstagen/Woche."
+        case .arnoldSplit: return "Drei Einheiten im Wechsel: Brust & Rücken, Schultern & Arme, Beine & Bauch - andere Muskel-Kombination als Push/Pull/Legs, gut ab 3 Trainingstagen/Woche."
+        case .upperLowerPushPullLegs: return "Fünf unterschiedliche Einheiten für hohe Trainingsfrequenz - kombiniert Oberkörper/Unterkörper mit Push/Pull/Legs, ideal bei 5 Trainingstagen/Woche für Fortgeschrittene."
         case .bodyPart: return "Jeder Tag hat einen eigenen Muskelgruppen-Schwerpunkt - für mehr Trainingstage/Woche."
         }
     }
@@ -97,8 +106,27 @@ public enum SplitType: String, CaseIterable, Identifiable, Codable {
                 ("Oberkörper", [.chest, .upperBack, .lats, .shoulders, .biceps, .triceps, .traps]),
                 ("Unterkörper", [.quads, .hamstrings, .glutes, .calves, .abs])
             ]
+        case .pushPull:
+            return [
+                ("Push (Brust/Schultern/Trizeps/Quads)", [.chest, .shoulders, .triceps, .quads]),
+                ("Pull (Rücken/Bizeps/Beinrückseite)", [.upperBack, .lats, .biceps, .traps, .hamstrings, .glutes, .calves, .abs])
+            ]
         case .pushPullLegs:
             return [
+                ("Push (Brust/Schultern/Trizeps)", [.chest, .shoulders, .triceps]),
+                ("Pull (Rücken/Bizeps)", [.upperBack, .lats, .biceps, .traps]),
+                ("Legs (Beine)", [.quads, .hamstrings, .glutes, .calves, .abs])
+            ]
+        case .arnoldSplit:
+            return [
+                ("Brust & Rücken", [.chest, .upperBack, .lats, .traps]),
+                ("Schultern & Arme", [.shoulders, .biceps, .triceps, .forearms]),
+                ("Beine & Bauch", [.quads, .hamstrings, .glutes, .calves, .abs])
+            ]
+        case .upperLowerPushPullLegs:
+            return [
+                ("Oberkörper", [.chest, .upperBack, .lats, .shoulders, .biceps, .triceps, .traps]),
+                ("Unterkörper", [.quads, .hamstrings, .glutes, .calves, .abs]),
                 ("Push (Brust/Schultern/Trizeps)", [.chest, .shoulders, .triceps]),
                 ("Pull (Rücken/Bizeps)", [.upperBack, .lats, .biceps, .traps]),
                 ("Legs (Beine)", [.quads, .hamstrings, .glutes, .calves, .abs])
@@ -126,8 +154,11 @@ public struct PlanGeneratorInput {
     /// Muskelgruppen, die wegen Verletzungen/Einschränkungen möglichst
     /// gemieden werden sollen (weder primär noch sekundär belastet).
     public var excludedMuscles: Set<MuscleGroup>
+    /// Konkrete Übungen, die nie in den Plan aufgenommen werden sollen,
+    /// z.B. weil ein Gerät im Gym nicht verfügbar ist oder sie nicht gemocht wird.
+    public var excludedExerciseIds: Set<String>
 
-    public init(splitType: SplitType, daysPerWeek: Int, experienceLevel: ExperienceLevel, goal: TrainingGoal, availableEquipment: Set<Equipment>, sessionDuration: SessionDuration, excludedMuscles: Set<MuscleGroup> = []) {
+    public init(splitType: SplitType, daysPerWeek: Int, experienceLevel: ExperienceLevel, goal: TrainingGoal, availableEquipment: Set<Equipment>, sessionDuration: SessionDuration, excludedMuscles: Set<MuscleGroup> = [], excludedExerciseIds: Set<String> = []) {
         self.splitType = splitType
         self.daysPerWeek = daysPerWeek
         self.experienceLevel = experienceLevel
@@ -135,6 +166,7 @@ public struct PlanGeneratorInput {
         self.availableEquipment = availableEquipment
         self.sessionDuration = sessionDuration
         self.excludedMuscles = excludedMuscles
+        self.excludedExerciseIds = excludedExerciseIds
     }
 }
 
@@ -155,6 +187,9 @@ public enum PlanGenerator {
         public let targetSets: Int
         public let targetReps: Int
         public let warmupSetCount: Int
+        /// Bis zu 2 Ausweich-Übungen für dieselben Ziel-Muskeln, z.B. falls
+        /// ein Gerät im Gym gerade belegt oder generell nicht verfügbar ist.
+        public let alternatives: [Exercise]
     }
 
     public static func generate(from input: PlanGeneratorInput) -> [GeneratedDay] {
@@ -190,6 +225,7 @@ public enum PlanGenerator {
             exercise.category == .strength
                 && (exercise.equipment == .bodyweight || input.availableEquipment.contains(exercise.equipment))
                 && exercise.allMuscles.allSatisfy { !input.excludedMuscles.contains($0) }
+                && !input.excludedExerciseIds.contains(exercise.id)
         }
 
         var selected: [Exercise] = []
@@ -221,13 +257,34 @@ public enum PlanGenerator {
 
         // Verbundübungen (mehr beteiligte Muskeln) zuerst in der Einheit.
         selected.sort { $0.allMuscles.count > $1.allMuscles.count }
+        let selectedIds = Set(selected.map(\.id))
 
         return selected.map { exercise in
             let isCompound = exercise.allMuscles.count >= 2
             let (sets, reps) = setsAndReps(goal: input.goal, experience: input.experienceLevel, isCompound: isCompound)
             let warmupSetCount = isCompound && exercise.equipment != .bodyweight ? 2 : (isCompound ? 1 : 0)
-            return GeneratedItem(exercise: exercise, targetSets: sets, targetReps: reps, warmupSetCount: warmupSetCount)
+            let alternatives = findAlternatives(for: exercise, input: input, eligible: eligible, alreadyInDay: selectedIds)
+            return GeneratedItem(exercise: exercise, targetSets: sets, targetReps: reps, warmupSetCount: warmupSetCount, alternatives: alternatives)
         }
+    }
+
+    /// Findet bis zu 2 Ausweich-Übungen mit überlappenden Ziel-Muskeln, die
+    /// bevorzugt anderes Equipment nutzen als das Original - damit sie
+    /// wirklich eine Alternative sind, z.B. falls ein Gerät belegt ist.
+    private static func findAlternatives(for exercise: Exercise, input: PlanGeneratorInput, eligible: [Exercise], alreadyInDay: Set<String>) -> [Exercise] {
+        eligible
+            .filter { $0.id != exercise.id && !alreadyInDay.contains($0.id) }
+            .filter { !Set($0.primaryMuscles).isDisjoint(with: exercise.primaryMuscles) }
+            .sorted { a, b in
+                let aDifferentEquipment = a.equipment != exercise.equipment
+                let bDifferentEquipment = b.equipment != exercise.equipment
+                if aDifferentEquipment != bDifferentEquipment { return aDifferentEquipment }
+                let aOverlap = Set(a.primaryMuscles).intersection(exercise.primaryMuscles).count
+                let bOverlap = Set(b.primaryMuscles).intersection(exercise.primaryMuscles).count
+                return aOverlap > bOverlap
+            }
+            .prefix(2)
+            .map { $0 }
     }
 
     private static func setsAndReps(goal: TrainingGoal, experience: ExperienceLevel, isCompound: Bool) -> (sets: Int, reps: Int) {

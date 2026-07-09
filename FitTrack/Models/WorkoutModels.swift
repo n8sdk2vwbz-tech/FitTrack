@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import HealthKit
 import FitTrackShared
 
 enum WorkoutSource: String, Codable {
@@ -79,6 +80,11 @@ final class WorkoutSession {
     var externalSourceName: String?
     var sourceRaw: String
     var healthKitWorkoutUUID: String?
+    /// `HKWorkoutActivityType.rawValue` des importierten HealthKit-Workouts
+    /// (z.B. Laufen, Radfahren) - erlaubt `muscleLoadEvents()`, auch für
+    /// Ausdauertrainings ohne eigene `ExerciseEntry`-Sätze eine sinnvolle
+    /// Muskel-Belastung abzuleiten (siehe `cardioExerciseLibraryId`).
+    var healthKitActivityTypeRawValue: Int?
     /// Gefühlte Anstrengung (RPE, 1-10), manuell nach dem Training bewertet -
     /// ähnlich Apples "Anstrengung bewerten". Fließt zusammen mit der
     /// Herzfrequenz in die Trainingslast-Berechnung ein (siehe `intensityMultiplier`).
@@ -101,6 +107,7 @@ final class WorkoutSession {
         externalSourceName: String? = nil,
         source: WorkoutSource = .iphone,
         healthKitWorkoutUUID: String? = nil,
+        healthKitActivityTypeRawValue: Int? = nil,
         perceivedExertion: Int? = nil,
         entries: [ExerciseEntry] = []
     ) {
@@ -114,6 +121,7 @@ final class WorkoutSession {
         self.externalSourceName = externalSourceName
         self.sourceRaw = source.rawValue
         self.healthKitWorkoutUUID = healthKitWorkoutUUID
+        self.healthKitActivityTypeRawValue = healthKitActivityTypeRawValue
         self.perceivedExertion = perceivedExertion
         self.entries = entries
     }
@@ -146,9 +154,30 @@ final class WorkoutSession {
         return factors.reduce(0, +) / Double(factors.count)
     }
 
+    /// Näherungsweise Belastung pro Trainingsminute für importierte
+    /// Ausdauertrainings ohne Satz-/Wiederholungsdaten (siehe unten). Da
+    /// unten pro betroffenem Muskel ein eigenes Event mit (bei sekundären
+    /// Muskeln halbem) `totalVolume` erzeugt wird, addiert sich die je
+    /// Session tatsächlich in `recentSessionLoad` einfließende Summe auf das
+    /// ca. 2-2.5-fache von `totalVolume` (1 primärer Cardio-Muskel + 2-3
+    /// sekundäre Muskeln je Übung in der Bibliothek) - der Wert hier ist
+    /// entsprechend niedriger angesetzt, damit eine ca. 40-minütige, moderat
+    /// intensive Einheit nach dieser Aufsummierung bei einer mit einer
+    /// durchschnittlichen Kraft-Einheit vergleichbaren Gesamtbelastung landet
+    /// (vgl. `RecoveryEngine.typicalSessionLoad`), statt sie dafür deutlich
+    /// zu überzeichnen.
+    private static let cardioLoadPerMinute = 15.0
+
     /// Leitet aus allen Sätzen die Belastungs-Impulse pro Muskel ab, anhand
     /// der primären/sekundären Muskeln jeder Übung aus der Bibliothek,
-    /// skaliert mit `intensityMultiplier` (RPE + Trainings-Herzfrequenz).
+    /// skaliert mit `intensityMultiplier` (RPE + Trainings-Herzfrequenz). Für
+    /// aus HealthKit importierte Ausdauertrainings (z.B. Laufen, Radfahren),
+    /// die keine `ExerciseEntry`-Sätze haben, wird stattdessen anhand von
+    /// Dauer und Trainings-Herzfrequenz sowie der Muskelzuordnung der
+    /// passenden Cardio-Übung aus `ExerciseLibrary` eine Belastung
+    /// abgeleitet - so fließt z.B. ein hartes Lauftraining auch in die
+    /// Bein-Ermüdung und die Gesamt-Bereitschaft ein, nicht nur reine
+    /// Kraft-Sessions.
     func muscleLoadEvents(maxHeartRate: Double? = nil) -> [MuscleLoadEvent] {
         var events: [MuscleLoadEvent] = []
         let intensity = intensityMultiplier(maxHeartRate: maxHeartRate)
@@ -164,6 +193,22 @@ final class WorkoutSession {
                 events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5))
             }
         }
+
+        if entries.isEmpty,
+           let rawActivityType = healthKitActivityTypeRawValue,
+           let cardioExerciseId = HKWorkoutActivityType(rawValue: UInt(rawActivityType))?.cardioExerciseLibraryId,
+           let exercise = ExerciseLibrary.byId[cardioExerciseId] {
+            let totalVolume = (durationSeconds / 60.0) * Self.cardioLoadPerMinute * intensity
+            if totalVolume > 0.01 {
+                for muscle in exercise.primaryMuscles {
+                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume))
+                }
+                for muscle in exercise.secondaryMuscles {
+                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5))
+                }
+            }
+        }
+
         return events
     }
 
@@ -209,8 +254,13 @@ final class PlanItem {
     var targetWeightKg: Double?
     var warmupSetCount: Int = 0
     var order: Int = 0
+    /// Ausweich-Übungen mit denselben Ziel-Muskeln (gleicher Index in beiden
+    /// Arrays), z.B. falls ein Gerät im Gym nicht verfügbar ist. Nur vom
+    /// Plan-Generator befüllt, bei manuell hinzugefügten Übungen leer.
+    var alternativeExerciseIds: [String] = []
+    var alternativeExerciseNames: [String] = []
 
-    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0) {
+    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = []) {
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
         self.targetSets = targetSets
@@ -218,6 +268,8 @@ final class PlanItem {
         self.targetWeightKg = targetWeightKg
         self.warmupSetCount = warmupSetCount
         self.order = order
+        self.alternativeExerciseIds = alternativeExerciseIds
+        self.alternativeExerciseNames = alternativeExerciseNames
     }
 
     func toDTO() -> PlanItemDTO {

@@ -29,6 +29,17 @@ enum HealthKitImportService {
             }
         }
 
+        // Nachtrag für Sessions, die schon vor Einführung von
+        // `healthKitActivityTypeRawValue` importiert wurden - ohne das
+        // fließen ihre Cardio-Einheiten nicht in die Muskel-/Bereitschafts-
+        // berechnung ein (siehe `WorkoutSession.muscleLoadEvents`).
+        for session in existingSessions where session.source == .health && session.healthKitActivityTypeRawValue == nil {
+            guard let uuid = session.healthKitWorkoutUUID,
+                  let match = hkWorkouts.first(where: { $0.uuid.uuidString == uuid }) else { continue }
+            session.healthKitActivityTypeRawValue = Int(match.workoutActivityType.rawValue)
+            didChange = true
+        }
+
         let knownUUIDs = Set(existingSessions.compactMap(\.healthKitWorkoutUUID))
         let localSessions = existingSessions.filter { $0.source != .health }
 
@@ -56,7 +67,8 @@ enum HealthKitImportService {
                 distanceMeters: summary.distanceMeters,
                 externalSourceName: summary.sourceName,
                 source: .health,
-                healthKitWorkoutUUID: workout.uuid.uuidString
+                healthKitWorkoutUUID: workout.uuid.uuidString,
+                healthKitActivityTypeRawValue: Int(workout.workoutActivityType.rawValue)
             )
             modelContext.insert(session)
             didChange = true

@@ -300,6 +300,26 @@ public final class HealthKitManager {
 }
 
 public extension HKWorkoutActivityType {
+    /// Ordnet einen HealthKit-Aktivitätstyp einer passenden Cardio-Übung aus
+    /// `ExerciseLibrary` zu, damit deren Muskelgruppen (`primaryMuscles`/
+    /// `secondaryMuscles`) für die Belastungsberechnung importierter
+    /// Ausdauertrainings wiederverwendet werden können - `nil`, wenn der Typ
+    /// keine verlässliche Muskelzuordnung erlaubt (z.B. reines Kraft-
+    /// training ohne Satz-/Wiederholungsdaten in HealthKit).
+    var cardioExerciseLibraryId: String? {
+        switch self {
+        case .running, .walking, .hiking: return "running"
+        case .cycling: return "cycling"
+        case .rowing: return "rowing-machine"
+        case .jumpRope: return "jump-rope"
+        case .stairClimbing: return "stair-climber"
+        case .swimming: return "swimming"
+        case .highIntensityIntervalTraining, .mixedCardio, .cardioDance: return "sprint-intervals"
+        case .elliptical: return "elliptical"
+        default: return nil
+        }
+    }
+
     /// Deutscher Anzeigename für die gängigsten Aktivitätstypen, für importierte
     /// HealthKit-Workouts ohne eigene FitTrack-Übungszuordnung.
     var displayName: String {

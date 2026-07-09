@@ -26,11 +26,13 @@ final class DashboardViewModel: ObservableObject {
         // verschmelzen. `sessionCount` steuert in RecoveryEngine, ab wann
         // zusätzlich die langfristige (ACWR-)Belastung einfließt.
         let sortedSessions = sessions.sorted { $0.date < $1.date }
-        let sessionLoads = sortedSessions
-            .map { $0.muscleLoadEvents(maxHeartRate: maxHeartRate).reduce(0.0) { $0 + $1.volume } }
-            .filter { $0 > 0 }
-        let recentSessionLoad = sessionLoads.last ?? 0
-        let sessionCount = sessionLoads.count
+        let sessionLoadsWithDates: [(date: Date, load: Double)] = sortedSessions.compactMap { session in
+            let load = session.muscleLoadEvents(maxHeartRate: maxHeartRate).reduce(0.0) { $0 + $1.volume }
+            return load > 0 ? (session.date, load) : nil
+        }
+        let recentSessionLoad = sessionLoadsWithDates.last?.load ?? 0
+        let daysSinceRecentSession = sessionLoadsWithDates.last.map { max(0, Date.now.timeIntervalSince($0.date) / 86400) }
+        let sessionCount = sessionLoadsWithDates.count
 
         // Wahrgenommene Anstrengung (RPE/Trainings-Herzfrequenz) der letzten
         // ca. 2 Tage, neuere Einheiten stärker gewichtet - reagiert anders als
@@ -70,6 +72,7 @@ final class DashboardViewModel: ObservableObject {
             chronicLoad: overall.chronic,
             sessionCount: sessionCount,
             recentSessionLoad: recentSessionLoad,
+            daysSinceRecentSession: daysSinceRecentSession,
             recentIntensity: recentIntensity
         )
 

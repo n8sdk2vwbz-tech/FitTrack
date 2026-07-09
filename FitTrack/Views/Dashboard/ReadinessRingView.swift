@@ -92,6 +92,11 @@ private struct ReadinessExplanationView: View {
         let icon: String
         let weight: String
         let currentScore: Int?
+        /// Rohwerte hinter dem Score (z.B. "6.8 Std." oder "45 ms · Ø 42 ms"),
+        /// damit nachvollziehbar ist, warum ein Score bei 100 gedeckelt ist -
+        /// die Scores selbst zeigen nicht, wie weit man über dem eigenen
+        /// Basiswert liegt (siehe `ReadinessResult`-Dokumentation).
+        let rawValue: String?
         let explanation: String
         let improvement: String
     }
@@ -103,6 +108,7 @@ private struct ReadinessExplanationView: View {
                 icon: "bed.double.fill",
                 weight: "35 %",
                 currentScore: readiness.sleepScore,
+                rawValue: readiness.sleepHours.map { String(format: "%.1f Std.", $0) },
                 explanation: "Schlafdauer der letzten Nacht im Verhältnis zu 8 Stunden, multipliziert mit der Schlafeffizienz (Anteil tatsächlicher Schlafzeit an der Zeit im Bett).",
                 improvement: "Verbessert sich durch mehr durchgehenden, ungestörten Schlaf nahe 8 Stunden."
             ),
@@ -111,26 +117,35 @@ private struct ReadinessExplanationView: View {
                 icon: "waveform.path.ecg",
                 weight: "30 %",
                 currentScore: readiness.hrvScore,
+                rawValue: rawValuePair(current: readiness.hrvMs, baseline: readiness.hrvBaselineMs, unit: "ms"),
                 explanation: "Deine Herzfrequenzvariabilität der letzten Nacht im Verhältnis zu deinem eigenen 14-Tage-Durchschnitt.",
-                improvement: "Verbessert sich, wenn deine HRV höher ist als dein persönlicher Durchschnitt – ein Zeichen für gute Erholung und niedrigen Stress."
+                improvement: "Verbessert sich, wenn deine HRV höher ist als dein persönlicher Durchschnitt – ein Zeichen für gute Erholung und niedrigen Stress. Der Score kappt bei Erreichen des eigenen Durchschnitts bei 100 - auch deutlich darüber liegende Werte zeigen also denselben Score."
             ),
             Component(
                 title: "Ruhepuls",
                 icon: "heart.fill",
                 weight: "15 %",
                 currentScore: readiness.rhrScore,
+                rawValue: rawValuePair(current: readiness.restingHeartRate, baseline: readiness.restingHeartRateBaseline, unit: "bpm"),
                 explanation: "Dein aktueller Ruhepuls im Verhältnis zu deinem eigenen 14-Tage-Durchschnitt.",
-                improvement: "Verbessert sich, wenn dein Ruhepuls niedriger ist als gewohnt. Ein erhöhter Ruhepuls deutet oft auf Stress, Krankheit oder unvollständige Erholung hin."
+                improvement: "Verbessert sich, wenn dein Ruhepuls niedriger ist als gewohnt. Ein erhöhter Ruhepuls deutet oft auf Stress, Krankheit oder unvollständige Erholung hin. Der Score kappt bei Erreichen des eigenen Durchschnitts bei 100 - auch deutlich niedrigere Werte zeigen also denselben Score."
             ),
             Component(
                 title: "Trainingslast",
                 icon: "figure.strengthtraining.traditional",
                 weight: "20 %",
                 currentScore: readiness.trainingLoadScore,
-                explanation: "In den ersten 10 Trainingseinheiten: Volumen und wahrgenommene Anstrengung (RPE und/oder Trainings-Herzfrequenz) der letzten Einheit allein, verglichen mit einem allgemeinen Richtwert. Die Herzfrequenz wird dabei nach Möglichkeit relativ zu deiner geschätzten HFmax bewertet (aus deinem in Health hinterlegten Geburtsdatum), sonst gegen einen festen Richtwert. Ab der 10. Einheit kommt zusätzlich die langfristige Belastung (Verhältnis aus kurz- zu langfristiger Trainingslast, ACWR) über die letzten Wochen dazu.",
-                improvement: "Verbessert sich durch ein als leicht empfundenes Training mit moderatem Volumen – bzw. ab der 10. Einheit zusätzlich, wenn die Belastung der letzten Tage nicht deutlich über deinem längerfristigen Durchschnitt liegt."
+                rawValue: nil,
+                explanation: "In den ersten 10 Trainingseinheiten: Volumen und wahrgenommene Anstrengung (RPE und/oder Trainings-Herzfrequenz) der letzten Einheit allein, verglichen mit einem allgemeinen Richtwert - klingt über ca. 4 Tage auf neutral ab, falls seitdem keine neue Einheit protokolliert wurde. Die Herzfrequenz wird dabei nach Möglichkeit relativ zu deiner geschätzten HFmax bewertet (aus deinem in Health hinterlegten Geburtsdatum), sonst gegen einen festen Richtwert. Ab der 10. Einheit kommt zusätzlich die langfristige Belastung (Verhältnis aus kurz- zu langfristiger Trainingslast, ACWR) über die letzten Wochen dazu.",
+                improvement: "Verbessert sich durch ein als leicht empfundenes Training mit moderatem Volumen, oder einfach durch verstreichende Zeit seit der letzten Einheit – bzw. ab der 10. Einheit zusätzlich, wenn die Belastung der letzten Tage nicht deutlich über deinem längerfristigen Durchschnitt liegt."
             )
         ]
+    }
+
+    private func rawValuePair(current: Double?, baseline: Double?, unit: String) -> String? {
+        guard let current else { return nil }
+        guard let baseline else { return String(format: "%.0f %@", current, unit) }
+        return String(format: "%.0f %@ · Ø %.0f %@", current, unit, baseline, unit)
     }
 
     var body: some View {
@@ -155,6 +170,11 @@ private struct ReadinessExplanationView: View {
                 ForEach(components, id: \.title) { component in
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
+                            if let rawValue = component.rawValue {
+                                Text(rawValue)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                            }
                             Text(component.explanation)
                                 .font(.subheadline)
                             Text(component.improvement)

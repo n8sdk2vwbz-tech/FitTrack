@@ -16,9 +16,15 @@ struct GeneratePlanView: View {
     @State private var sessionDuration: SessionDuration = .medium
     @State private var selectedEquipment: Set<Equipment> = [.barbell, .dumbbell, .machine, .cable, .bodyweight]
     @State private var excludedMuscles: Set<MuscleGroup> = []
+    @State private var excludedExerciseIds: Set<String> = []
+    @State private var showingExercisePicker = false
 
     private let equipmentOptions: [Equipment] = [.barbell, .dumbbell, .kettlebell, .machine, .cable, .band, .bodyweight]
     private let muscleOptions = MuscleGroup.allCases.filter { $0 != .cardio }
+
+    private var excludedExercisesList: [Exercise] {
+        ExerciseLibrary.all.filter { excludedExerciseIds.contains($0.id) }.sorted { $0.name < $1.name }
+    }
 
     var body: some View {
         NavigationStack {
@@ -80,7 +86,31 @@ struct GeneratePlanView: View {
                 } header: {
                     Text("Einschränkungen (optional)")
                 } footer: {
-                    Text("Ausgewählte Muskelgruppen werden bei der Übungsauswahl gemieden, z.B. bei Verletzungen.")
+                    Text("Für Verletzungen oder Beschwerden: Aktivierte Muskelgruppen werden komplett von der Übungsauswahl ausgeschlossen - auch dann, wenn sie in einer Übung nur mitarbeiten, nicht nur wenn sie deren Hauptziel sind. Beispiel: Schließt du \"Quadrizeps\" wegen Knieproblemen aus, entfällt auch die Kniebeuge, obwohl sie eigentlich für Gesäß/Beinrückseite eingeplant wäre - weil die Quads dabei mit belastet werden.")
+                }
+
+                Section {
+                    if excludedExercisesList.isEmpty {
+                        Text("Keine Übung ausgeschlossen")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(excludedExercisesList) { exercise in
+                            Text(exercise.name)
+                        }
+                        .onDelete { offsets in
+                            let list = excludedExercisesList
+                            for index in offsets { excludedExerciseIds.remove(list[index].id) }
+                        }
+                    }
+                    Button {
+                        showingExercisePicker = true
+                    } label: {
+                        Label("Übung ausschließen", systemImage: "minus.circle")
+                    }
+                } header: {
+                    Text("Ausgeschlossene Übungen (optional)")
+                } footer: {
+                    Text("Diese Übungen werden nie in den Plan aufgenommen, z.B. wenn ein Gerät bei dir im Gym nicht verfügbar ist. Zu jeder Übung im fertigen Plan schlägt der Generator außerdem passende Alternativen vor.")
                 }
             }
             .navigationTitle("Plan erstellen lassen")
@@ -94,6 +124,9 @@ struct GeneratePlanView: View {
                         .disabled(selectedEquipment.isEmpty)
                 }
             }
+            .sheet(isPresented: $showingExercisePicker) {
+                ExerciseMultiPickerView(selectedIds: $excludedExerciseIds)
+            }
         }
     }
 
@@ -105,7 +138,8 @@ struct GeneratePlanView: View {
             goal: goal,
             availableEquipment: selectedEquipment,
             sessionDuration: sessionDuration,
-            excludedMuscles: excludedMuscles
+            excludedMuscles: excludedMuscles,
+            excludedExerciseIds: excludedExerciseIds
         )
         let generatedDays = PlanGenerator.generate(from: input)
 
@@ -117,7 +151,9 @@ struct GeneratePlanView: View {
                     targetSets: item.targetSets,
                     targetReps: item.targetReps,
                     warmupSetCount: item.warmupSetCount,
-                    order: itemIndex
+                    order: itemIndex,
+                    alternativeExerciseIds: item.alternatives.map(\.id),
+                    alternativeExerciseNames: item.alternatives.map(\.name)
                 )
             }
             return PlanDay(name: generatedDay.name, order: dayIndex, items: items)

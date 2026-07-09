@@ -20,11 +20,16 @@ public struct RecoveryInputs {
     /// Belastung (Volumen × wahrgenommene Anstrengung) der zuletzt protokollierten
     /// Trainingseinheit.
     public var recentSessionLoad: Double
+    /// Alter (in Tagen) dieser zuletzt protokollierten Einheit - lässt ihren
+    /// Einfluss auf den Score über `RecoveryEngine.recentSessionLoadFadeDays`
+    /// Tage hinweg abklingen, statt sie unbegrenzt lange (auch nach einer
+    /// Woche ohne neues Training) unverändert voll wirken zu lassen.
+    public var daysSinceRecentSession: Double?
     /// Gewichteter Schnitt der wahrgenommenen Anstrengung (RPE und/oder
     /// Trainings-Herzfrequenz) der letzten ca. 2 Tage, 1.0 = neutral (RPE 5).
     public var recentIntensity: Double?
 
-    public init(sleepHours: Double?, sleepEfficiency: Double?, hrvMs: Double?, hrvBaselineMs: Double?, restingHeartRate: Double?, restingHeartRateBaseline: Double?, acuteLoad: Double, chronicLoad: Double, sessionCount: Int, recentSessionLoad: Double, recentIntensity: Double?) {
+    public init(sleepHours: Double?, sleepEfficiency: Double?, hrvMs: Double?, hrvBaselineMs: Double?, restingHeartRate: Double?, restingHeartRateBaseline: Double?, acuteLoad: Double, chronicLoad: Double, sessionCount: Int, recentSessionLoad: Double, daysSinceRecentSession: Double?, recentIntensity: Double?) {
         self.sleepHours = sleepHours
         self.sleepEfficiency = sleepEfficiency
         self.hrvMs = hrvMs
@@ -35,6 +40,7 @@ public struct RecoveryInputs {
         self.chronicLoad = chronicLoad
         self.sessionCount = sessionCount
         self.recentSessionLoad = recentSessionLoad
+        self.daysSinceRecentSession = daysSinceRecentSession
         self.recentIntensity = recentIntensity
     }
 }
@@ -62,14 +68,28 @@ public struct ReadinessResult {
     public let hrvScore: Int?
     public let rhrScore: Int?
     public let trainingLoadScore: Int?
+    /// Rohwerte hinter den Scores oben, rein zur Anzeige (z.B. "HRV 45 ms ·
+    /// Ø 42 ms"), damit nachvollziehbar ist, warum ein Score bei 100 gedeckelt
+    /// ist - die Scores selbst kappen bei Erreichen/Überschreiten des
+    /// eigenen Basiswerts, zeigen also nicht, wie weit darüber man liegt.
+    public let sleepHours: Double?
+    public let hrvMs: Double?
+    public let hrvBaselineMs: Double?
+    public let restingHeartRate: Double?
+    public let restingHeartRateBaseline: Double?
 
-    public init(score: Int, category: ReadinessCategory, sleepScore: Int?, hrvScore: Int?, rhrScore: Int?, trainingLoadScore: Int?) {
+    public init(score: Int, category: ReadinessCategory, sleepScore: Int?, hrvScore: Int?, rhrScore: Int?, trainingLoadScore: Int?, sleepHours: Double? = nil, hrvMs: Double? = nil, hrvBaselineMs: Double? = nil, restingHeartRate: Double? = nil, restingHeartRateBaseline: Double? = nil) {
         self.score = score
         self.category = category
         self.sleepScore = sleepScore
         self.hrvScore = hrvScore
         self.rhrScore = rhrScore
         self.trainingLoadScore = trainingLoadScore
+        self.sleepHours = sleepHours
+        self.hrvMs = hrvMs
+        self.hrvBaselineMs = hrvBaselineMs
+        self.restingHeartRate = restingHeartRate
+        self.restingHeartRateBaseline = restingHeartRateBaseline
     }
 
     public var summary: String {
@@ -104,6 +124,14 @@ public enum RecoveryEngine {
     /// eigene Trainingshistorie existiert (z.B. beim allerersten Training) -
     /// grob kalibriert an 2-3 Übungen à 3 Sätzen mit moderatem Gewicht.
     private static let typicalSessionLoad = 1500.0
+
+    /// Nach wie vielen Tagen die Wirkung der zuletzt protokollierten Einheit
+    /// auf den Trainingslast-Baustein vollständig auf neutral (100) abgeklungen
+    /// ist, statt unbegrenzt lange (auch nach z.B. einer Woche ohne neues
+    /// Training) unverändert weiter voll auf den Score zu wirken. Angelehnt an
+    /// `MuscleLoadCalculator`s akute (3-Tage-)Spanne plus etwas Puffer, da eine
+    /// einzelne harte Einheit üblicherweise nach 3-4 Tagen spürbar abgeklungen ist.
+    private static let recentSessionLoadFadeDays = 4.0
 
     /// Bildet ein Belastungsverhältnis (z.B. ACWR, oder heutiges Volumen
     /// gegen einen Referenzwert) auf einen Score ab. Bewusst eine sanfte,
@@ -158,13 +186,19 @@ public enum RecoveryEngine {
         var loadScore: Int?
         var loadScoreParts: [Double] = []
 
-        // (1) Immer verfügbar, ab der allerersten Einheit: heutiges Volumen
-        // gegen einen generischen Referenzwert (`typicalSessionLoad`), da vor
-        // der ersten Einheit noch keine eigene Historie existiert, gegen die
-        // man vergleichen könnte.
+        // (1) Immer verfügbar, ab der allerersten Einheit: Volumen der
+        // zuletzt protokollierten Einheit gegen einen generischen Referenzwert
+        // (`typicalSessionLoad`), da vor der ersten Einheit noch keine eigene
+        // Historie existiert, gegen die man vergleichen könnte. Klingt über
+        // `recentSessionLoadFadeDays` Tage auf neutral (100) ab, statt eine
+        // einzelne, länger zurückliegende Einheit unbegrenzt lange (z.B. auch
+        // nach einer Woche ohne neues Training) unverändert voll wirken zu lassen.
         if inputs.recentSessionLoad > 0.01 {
             let ratio = inputs.recentSessionLoad / typicalSessionLoad
-            loadScoreParts.append(loadRatioScore(ratio))
+            let rawScore = loadRatioScore(ratio)
+            let age = inputs.daysSinceRecentSession ?? 0
+            let fade = clamp(1 - age / recentSessionLoadFadeDays, 0, 1)
+            loadScoreParts.append(rawScore * fade + 100 * (1 - fade))
         }
 
         // (2) Immer verfügbar, sofern bewertet: wie anstrengend fühlte sich
@@ -213,7 +247,12 @@ public enum RecoveryEngine {
             sleepScore: sleepScore,
             hrvScore: hrvScore,
             rhrScore: rhrScore,
-            trainingLoadScore: loadScore
+            trainingLoadScore: loadScore,
+            sleepHours: inputs.sleepHours,
+            hrvMs: inputs.hrvMs,
+            hrvBaselineMs: inputs.hrvBaselineMs,
+            restingHeartRate: inputs.restingHeartRate,
+            restingHeartRateBaseline: inputs.restingHeartRateBaseline
         )
     }
 
