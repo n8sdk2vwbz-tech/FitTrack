@@ -62,11 +62,22 @@ public final class HealthKitManager {
         return 208.0 - 0.7 * Double(age)
     }
 
+    /// Anker für "die letzte Nacht", auf 16 Uhr des Vortags gerundet statt
+    /// rein rollierend eine feste Stundenzahl zurückzugehen: Ein
+    /// rollierendes Fenster würde bei einer Abfrage später am Tag (z.B.
+    /// abends, kurz vor dem nächsten Zubettgehen) bereits mitten in die
+    /// letzte Nacht hineinreichen und deren Anfang abschneiden - 16 Uhr
+    /// liegt sicher vor jeder üblichen Schlafenszeit, erfasst die komplette
+    /// letzte Nacht also unabhängig von der Abfrage-Uhrzeit tagsüber/abends.
+    private func lastNightWindowStart(now: Date, calendar: Calendar = .current) -> Date? {
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: now) else { return nil }
+        return calendar.date(bySettingHour: 16, minute: 0, second: 0, of: yesterday)
+    }
+
     // MARK: - Schlaf
 
     public func fetchLastNightSleep(now: Date = .now) async -> SleepSummary? {
-        let calendar = Calendar.current
-        guard let windowStart = calendar.date(byAdding: .hour, value: -20, to: now) else { return nil }
+        guard let windowStart = lastNightWindowStart(now: now) else { return nil }
         let predicate = HKQuery.predicateForSamples(withStart: windowStart, end: now, options: .strictStartDate)
 
         let samples: [HKCategorySample] = await withCheckedContinuation { continuation in
@@ -98,10 +109,9 @@ public final class HealthKitManager {
 
     // MARK: - Herzratenvariabilität (HRV)
 
-    private static let hrvLatestWindowHours = 20
-
     public func fetchLatestHRV(now: Date = .now) async -> Double? {
-        await fetchAverageQuantity(type: hrvType, unit: HKUnit.secondUnit(with: .milli), from: Calendar.current.date(byAdding: .hour, value: -Self.hrvLatestWindowHours, to: now) ?? now, to: now)
+        guard let windowStart = lastNightWindowStart(now: now) else { return nil }
+        return await fetchAverageQuantity(type: hrvType, unit: HKUnit.secondUnit(with: .milli), from: windowStart, to: now)
     }
 
     /// Baseline-Fenster endet bewusst dort, wo `fetchLatestHRV`s Fenster
@@ -110,7 +120,7 @@ public final class HealthKitManager {
     /// Vergleichsbasis gezählt, was die Basis Richtung aktuellem Wert zieht
     /// und den Score besonders bei wenig Historie künstlich Richtung 100 verzerrt.
     public func fetchHRVBaseline(days: Int = 14, now: Date = .now) async -> Double? {
-        guard let latestWindowStart = Calendar.current.date(byAdding: .hour, value: -Self.hrvLatestWindowHours, to: now),
+        guard let latestWindowStart = lastNightWindowStart(now: now),
               let start = Calendar.current.date(byAdding: .day, value: -days, to: latestWindowStart) else { return nil }
         return await fetchAverageQuantity(type: hrvType, unit: HKUnit.secondUnit(with: .milli), from: start, to: latestWindowStart)
     }
