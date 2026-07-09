@@ -139,17 +139,20 @@ public enum RecoveryEngine {
     /// 1:1-Skalierung (`100 - (ratio-1)*100`) sättigt bereits bei einem
     /// Verhältnis von ca. 2.0 vollständig bei 0 - dadurch hätten ein moderat
     /// hartes und ein extrem hartes Training denselben (maximalen) Effekt auf
-    /// den Score, obwohl sie klar unterschiedlich belastend waren. Zwischen
-    /// 0.8 und 1.3 (der in der Sportwissenschaft gängige "Sweet Spot") bleibt
-    /// der Score bei 100.
+    /// den Score, obwohl sie klar unterschiedlich belastend waren.
+    ///
+    /// Unterhalb von 1.3 (weniger/angemessene Belastung relativ zum
+    /// Vergleichswert, inkl. vollständig ausgeruht bei Ratio 0) gibt es
+    /// bewusst keinen Abzug: Für die *heutige* Bereitschaft ist Erholung
+    /// immer gut, nie schlecht - anders als z.B. bei `FatigueLevel`, wo
+    /// niedrige ACWR-Werte ebenfalls positiv als `.fresh` gerahmt sind. Die
+    /// gegenteilige langfristige Sorge (zu wenig Trainingsreiz über Wochen,
+    /// "Detraining") ist eine Trainingsplanungs-, keine Tagesbereitschafts-Frage
+    /// und würde sonst z.B. einen nach einer harten Einheit voll erholten
+    /// Nutzer fälschlich mit einem gesenkten Score "bestrafen".
     private static func loadRatioScore(_ ratio: Double) -> Double {
         switch ratio {
-        case ..<0.8:
-            // Deutlich weniger Belastung als der Vergleichswert - grundsätzlich
-            // gut für die Erholung, aber kein voller Bonus (langfristig ist
-            // auch zu wenig Reiz/Detraining nicht ideal).
-            return clamp(70 + ratio / 0.8 * 30, 0, 100)
-        case 0.8...1.3:
+        case ..<1.3:
             return 100
         default:
             let overshoot = ratio - 1.3
