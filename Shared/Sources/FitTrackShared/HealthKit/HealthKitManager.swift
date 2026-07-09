@@ -117,7 +117,14 @@ public final class HealthKitManager {
 
     // MARK: - Ruhepuls
 
-    private static let restingHRLatestWindowDays = 1
+    /// Apple berechnet den Ruhepuls als EINEN Tageswert pro Kalendertag (im
+    /// Gegensatz zur HRV, für die typischerweise viele Einzelmessungen pro
+    /// Nacht vorliegen). Ein zu enges rollierendes 24h-Fenster kann diesen
+    /// einen Tageswert knapp verpassen, je nachdem, zu welcher Uhrzeit genau
+    /// abgefragt wird und wann genau Apple den Wert für den Tag stempelt -
+    /// 2 Tage geben genug Puffer, damit der letzte verfügbare Tageswert
+    /// zuverlässig im Fenster liegt, unabhängig von der Abfrage-Uhrzeit.
+    private static let restingHRLatestWindowDays = 2
 
     public func fetchLatestRestingHeartRate(now: Date = .now) async -> Double? {
         await fetchAverageQuantity(type: restingHRType, unit: HKUnit.count().unitDivided(by: .minute()), from: Calendar.current.date(byAdding: .day, value: -Self.restingHRLatestWindowDays, to: now) ?? now, to: now)
