@@ -169,14 +169,14 @@ public enum RecoveryEngine {
             let efficiencyFactor = inputs.sleepEfficiency.map { clamp($0, 0.5, 1.0) } ?? 1.0
             let score = clamp(base * efficiencyFactor, 0, 100)
             sleepScore = Int(score.rounded())
-            components.append((score, 0.35))
+            components.append((score, 0.30))
         }
 
         var hrvScore: Int?
         if let hrv = inputs.hrvMs, let baseline = inputs.hrvBaselineMs, baseline > 0 {
             let score = clamp(100 * (hrv / baseline), 0, 100)
             hrvScore = Int(score.rounded())
-            components.append((score, 0.30))
+            components.append((score, 0.25))
         }
 
         var rhrScore: Int?
@@ -224,7 +224,18 @@ public enum RecoveryEngine {
         if !loadScoreParts.isEmpty {
             let combined = loadScoreParts.reduce(0, +) / Double(loadScoreParts.count)
             loadScore = Int(combined.rounded())
-            components.append((combined, 0.20))
+            // Je frischer die zuletzt protokollierte Einheit, desto mehr
+            // zusätzliches Gewicht bekommt die Trainingslast gegenüber
+            // Schlaf/HRV/Ruhepuls: Die drei beschreiben nur den Zustand VOR
+            // dieser Einheit (Schlaf letzte Nacht, HRV/Ruhepuls als
+            // Tageswerte) und können ein gerade erst absolviertes, hartes
+            // Training grundsätzlich noch nicht "sehen" - ohne diesen
+            // Ausgleich würde ein guter Morgen-Score direkt danach
+            // fälschlich weiter volle Bereitschaft suggerieren. Klingt über
+            // denselben Zeitraum wie `recentSessionLoadFadeDays` aus, bis nur
+            // noch die Basisgewichtung greift.
+            let freshnessBoost = clamp(1 - (inputs.daysSinceRecentSession ?? recentSessionLoadFadeDays), 0, 1) * 0.25
+            components.append((combined, 0.30 + freshnessBoost))
         }
 
         let totalWeight = components.reduce(0) { $0 + $1.weight }

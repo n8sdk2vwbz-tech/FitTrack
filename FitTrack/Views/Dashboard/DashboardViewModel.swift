@@ -20,19 +20,30 @@ final class DashboardViewModel: ObservableObject {
         let statuses = MuscleLoadCalculator.status(for: events)
         let overall = MuscleLoadCalculator.overallLoad(from: statuses)
 
-        // Belastung pro Trainingseinheit (nicht pro Kalendertag!) - zwei
-        // Einheiten am selben Tag (z.B. beim Testen kurz hintereinander)
-        // zählen als zwei eigene Einheiten, statt zu einem Tageswert zu
-        // verschmelzen. `sessionCount` steuert in RecoveryEngine, ab wann
-        // zusätzlich die langfristige (ACWR-)Belastung einfließt.
+        // `sessionCount`/ACWR zählen weiterhin jede Einheit einzeln (auch
+        // mehrere am selben Tag), da das für die langfristige 28-Tage-Basis
+        // die richtige Auflösung ist. `sessionCount` steuert in RecoveryEngine,
+        // ab wann zusätzlich die langfristige (ACWR-)Belastung einfließt.
         let sortedSessions = sessions.sorted { $0.date < $1.date }
         let sessionLoadsWithDates: [(date: Date, load: Double)] = sortedSessions.compactMap { session in
             let load = session.muscleLoadEvents(maxHeartRate: maxHeartRate).reduce(0.0) { $0 + $1.volume }
             return load > 0 ? (session.date, load) : nil
         }
-        let recentSessionLoad = sessionLoadsWithDates.last?.load ?? 0
-        let daysSinceRecentSession = sessionLoadsWithDates.last.map { max(0, Date.now.timeIntervalSince($0.date) / 86400) }
         let sessionCount = sessionLoadsWithDates.count
+
+        // `recentSessionLoad` (Teil der "Trainingslast" in RecoveryEngine)
+        // summiert dagegen bewusst ALLE Einheiten desselben Kalendertags wie
+        // die zuletzt protokollierte - z.B. Cardio morgens + Krafttraining
+        // nachmittags zählen hier zusammen, statt dass nur die chronologisch
+        // letzte Einheit berücksichtigt wird und die andere unter den Tisch fällt.
+        let calendar = Calendar.current
+        let mostRecentDate = sessionLoadsWithDates.last?.date
+        let recentSessionLoad = mostRecentDate.map { recentDate in
+            sessionLoadsWithDates
+                .filter { calendar.isDate($0.date, inSameDayAs: recentDate) }
+                .reduce(0.0) { $0 + $1.load }
+        } ?? 0
+        let daysSinceRecentSession = mostRecentDate.map { max(0, Date.now.timeIntervalSince($0) / 86400) }
 
         // Wahrgenommene Anstrengung (RPE/Trainings-Herzfrequenz) der letzten
         // ca. 2 Tage, neuere Einheiten stärker gewichtet - reagiert anders als

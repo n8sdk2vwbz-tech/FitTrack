@@ -13,8 +13,13 @@ struct MuscleHeatmapView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Muskelbelastung")
-                .font(.headline)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Muskelbelastung")
+                    .font(.headline)
+                Text("Zeigt, welche einzelne Muskelgruppe für Krafttraining bereit ist - z.B. ob Beine trotz Cardio-Einheit schon wieder frisch genug für einen Bein-Tag sind.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(trainableMuscles) { muscle in
@@ -28,6 +33,46 @@ struct MuscleHeatmapView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+/// Eigene, prominente Bereitschafts-Anzeige für die Herz-Kreislauf-Belastung
+/// (Cardio), getrennt von der Muskel-Heatmap unten: Cardio-Belastung läuft
+/// unabhängig von einzelnen Kraft-Muskelgruppen, daher eine eigene
+/// "bin ich bereit für eine Cardio-Einheit"-Aussage statt sie in der langen
+/// Muskel-Grid untergehen zu lassen.
+struct CardioReadinessCard: View {
+    let status: MuscleLoadStatus?
+    let readiness: ReadinessResult?
+
+    var body: some View {
+        if let status {
+            NavigationLink {
+                MuscleDetailView(status: status, readiness: readiness)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "figure.run")
+                        .font(.title2)
+                        .foregroundStyle(status.fatigueLevel.color)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Cardio-Bereitschaft")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Text(status.fatigueLevel.displayName)
+                            .font(.caption)
+                            .foregroundStyle(status.fatigueLevel.color)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .background(status.fatigueLevel.color.opacity(0.15), in: RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(status.fatigueLevel.color, lineWidth: 1.5))
+            }
+            .buttonStyle(.plain)
         }
     }
 }

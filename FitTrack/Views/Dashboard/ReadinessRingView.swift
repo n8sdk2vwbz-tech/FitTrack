@@ -106,7 +106,7 @@ private struct ReadinessExplanationView: View {
             Component(
                 title: "Schlaf",
                 icon: "bed.double.fill",
-                weight: "35 %",
+                weight: "30 %",
                 currentScore: readiness.sleepScore,
                 rawValue: readiness.sleepHours.map { String(format: "%.1f Std.", $0) },
                 explanation: "Schlafdauer der letzten Nacht im Verhältnis zu 8 Stunden, multipliziert mit der Schlafeffizienz (Anteil tatsächlicher Schlafzeit an der Zeit im Bett).",
@@ -115,7 +115,7 @@ private struct ReadinessExplanationView: View {
             Component(
                 title: "HRV",
                 icon: "waveform.path.ecg",
-                weight: "30 %",
+                weight: "25 %",
                 currentScore: readiness.hrvScore,
                 rawValue: rawValuePair(current: readiness.hrvMs, baseline: readiness.hrvBaselineMs, unit: "ms"),
                 explanation: "Deine Herzfrequenzvariabilität der letzten Nacht im Verhältnis zu deinem eigenen 14-Tage-Durchschnitt.",
@@ -133,10 +133,10 @@ private struct ReadinessExplanationView: View {
             Component(
                 title: "Trainingslast",
                 icon: "figure.strengthtraining.traditional",
-                weight: "20 %",
+                weight: "30-55 %",
                 currentScore: readiness.trainingLoadScore,
                 rawValue: nil,
-                explanation: "In den ersten 10 Trainingseinheiten: Volumen und wahrgenommene Anstrengung (RPE und/oder Trainings-Herzfrequenz) der letzten Einheit allein, verglichen mit einem allgemeinen Richtwert - klingt über ca. 4 Tage auf neutral ab, falls seitdem keine neue Einheit protokolliert wurde. Die Herzfrequenz wird dabei nach Möglichkeit relativ zu deiner geschätzten HFmax bewertet (aus deinem in Health hinterlegten Geburtsdatum), sonst gegen einen festen Richtwert. Ab der 10. Einheit kommt zusätzlich die langfristige Belastung (Verhältnis aus kurz- zu langfristiger Trainingslast, ACWR) über die letzten Wochen dazu.",
+                explanation: "In den ersten 10 Trainingseinheiten: Volumen und wahrgenommene Anstrengung (RPE und/oder Trainings-Herzfrequenz) der letzten Einheit allein, verglichen mit einem allgemeinen Richtwert - klingt über ca. 4 Tage auf neutral ab, falls seitdem keine neue Einheit protokolliert wurde. Die Herzfrequenz wird dabei nach Möglichkeit relativ zu deiner geschätzten HFmax bewertet (aus deinem in Health hinterlegten Geburtsdatum), sonst gegen einen festen Richtwert. Ab der 10. Einheit kommt zusätzlich die langfristige Belastung (Verhältnis aus kurz- zu langfristiger Trainingslast, ACWR) über die letzten Wochen dazu. Das Gewicht steigt zusätzlich auf bis zu 55 %, je frischer die letzte Einheit ist: Schlaf/HRV/Ruhepuls spiegeln nur deinen Zustand vor dieser Einheit wider und können ein gerade erst absolviertes Training noch nicht erfassen.",
                 improvement: "Verbessert sich durch ein als leicht empfundenes Training mit moderatem Volumen, oder einfach durch verstreichende Zeit seit der letzten Einheit – bzw. ab der 10. Einheit zusätzlich, wenn die Belastung der letzten Tage nicht deutlich über deinem längerfristigen Durchschnitt liegt."
             )
         ]

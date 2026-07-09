@@ -23,6 +23,8 @@ struct DashboardView: View {
                         }
                     }
 
+                    CardioReadinessCard(status: viewModel.muscleStatuses[.cardio], readiness: viewModel.readiness)
+
                     MuscleHeatmapView(statuses: viewModel.muscleStatuses, readiness: viewModel.readiness)
                 }
                 .padding()
