@@ -28,9 +28,17 @@ final class SetEntry {
         self.order = order
     }
 
-    var volume: Double {
-        let effectiveWeight = weightKg > 0 ? weightKg : 20 // Körpergewichts-Näherung für Belastungsindex
-        return Double(reps) * effectiveWeight
+    /// Belastungsindex dieses Satzes, unter Berücksichtigung von `Exercise.loadType`
+    /// (z.B. Körpergewicht ± eingegebenem Gewicht bei Klimmzug-/Dip-Varianten,
+    /// siehe `Exercise.effectiveWeight`) und `isUnilateral` (einseitig ausgeführte
+    /// Übungen zählen doppelt, da beide Seiten im selben Satz belastet werden).
+    func volume(exercise: Exercise?) -> Double {
+        guard let exercise else {
+            return Double(reps) * (weightKg > 0 ? weightKg : 20)
+        }
+        let effectiveWeight = exercise.effectiveWeight(enteredWeightKg: weightKg, bodyWeightKg: BodyWeightCache.shared.currentKg)
+        let unilateralFactor = exercise.isUnilateral ? 2.0 : 1.0
+        return Double(reps) * effectiveWeight * unilateralFactor
     }
 }
 
@@ -62,7 +70,8 @@ final class ExerciseEntry {
     }
 
     var totalVolume: Double {
-        sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume }
+        let exercise = ExerciseLibrary.byId[exerciseId]
+        return sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
     }
 }
 
@@ -191,7 +200,7 @@ final class WorkoutSession {
         let intensity = intensityMultiplier(maxHeartRate: maxHeartRate)
         for entry in entries {
             guard let exercise = ExerciseLibrary.byId[entry.exerciseId] else { continue }
-            let baseVolume = entry.sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume }
+            let baseVolume = entry.sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
             guard baseVolume > 0 else { continue }
             let totalVolume = baseVolume * intensity
             for muscle in exercise.primaryMuscles {

@@ -15,6 +15,10 @@ final class DashboardViewModel: ObservableObject {
         // macht die Herzfrequenz-Bewertung individuell statt gegen einen für
         // alle gleichen 130-bpm-Richtwert - siehe `intensityMultiplier`.
         let maxHeartRate = HealthKitManager.shared.fetchEstimatedMaxHeartRate()
+        // Vor der Volumen-Berechnung aktualisieren, da `muscleLoadEvents()`
+        // synchron auf den (evtl. noch leeren) Cache zugreift - siehe
+        // `BodyWeightCache`.
+        await BodyWeightCache.shared.refresh()
 
         let events = sessions.flatMap { $0.muscleLoadEvents(maxHeartRate: maxHeartRate) }
         let statuses = MuscleLoadCalculator.status(for: events)

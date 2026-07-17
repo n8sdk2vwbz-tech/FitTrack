@@ -32,6 +32,7 @@ public final class HealthKitManager {
     private let distanceWalkingRunningType = HKQuantityType(.distanceWalkingRunning)
     private let distanceCyclingType = HKQuantityType(.distanceCycling)
     private let workoutType = HKObjectType.workoutType()
+    private let bodyMassType = HKQuantityType(.bodyMass)
     private let dateOfBirthType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)
 
     public var isHealthDataAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
@@ -42,7 +43,7 @@ public final class HealthKitManager {
         guard isHealthDataAvailable else { return }
         var readTypes: Set<HKObjectType> = [
             sleepType, hrvType, restingHRType, heartRateType, activeEnergyType,
-            stepCountType, distanceWalkingRunningType, distanceCyclingType, workoutType
+            stepCountType, distanceWalkingRunningType, distanceCyclingType, workoutType, bodyMassType
         ]
         if let dateOfBirthType { readTypes.insert(dateOfBirthType) }
         let writeTypes: Set<HKSampleType> = [workoutType, activeEnergyType, heartRateType]
@@ -159,6 +160,27 @@ public final class HealthKitManager {
         guard !samples.isEmpty else { return nil }
         let total = samples.reduce(0.0) { $0 + $1.quantity.doubleValue(for: unit) }
         return total / Double(samples.count)
+    }
+
+    // MARK: - Körpergewicht
+
+    /// Für `Exercise`n mit `.bodyweightPlus`/`.bodyweightMinus` (siehe
+    /// `BodyWeightCache`) - liefert den zuletzt in Health erfassten
+    /// Körpergewichts-Wert, unabhängig davon, wie lange das her ist (anders
+    /// als bei Schlaf/HRV/Ruhepuls gibt es hier keinen sinnvollen "richtigen"
+    /// Zeitraum - eine Woche oder auch mehrere Monate alte Waage-Messung ist
+    /// immer noch die beste verfügbare Näherung).
+    public func fetchLatestBodyWeight(daysBack: Int = 365, now: Date = .now) async -> Double? {
+        guard let start = Calendar.current.date(byAdding: .day, value: -daysBack, to: now) else { return nil }
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: now, options: .strictStartDate)
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        let samples: [HKQuantitySample] = await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: bodyMassType, predicate: predicate, limit: 1, sortDescriptors: [sort]) { _, results, _ in
+                continuation.resume(returning: (results as? [HKQuantitySample]) ?? [])
+            }
+            healthStore.execute(query)
+        }
+        return samples.first?.quantity.doubleValue(for: .gramUnit(with: .kilo))
     }
 
     // MARK: - Workouts speichern (manuelle Erfassung oder Übernahme vom Watch-Ergebnis)

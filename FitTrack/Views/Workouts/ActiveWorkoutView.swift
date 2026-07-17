@@ -110,6 +110,11 @@ struct ActiveWorkoutView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        if live.exercise.loadType != .external {
+                            Text("Eingegebenes Gewicht = \(live.exercise.loadType.displayName), wird mit deinem Körpergewicht aus Health verrechnet.")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
 
                         ForEach(Array($live.sets.enumerated()), id: \.element.id) { index, $set in
                             HStack(spacing: 6) {
