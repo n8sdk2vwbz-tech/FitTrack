@@ -142,16 +142,24 @@ final class WorkoutSession {
     ///   berücksichtigt Alter/individuelle Fitness statt für alle denselben
     ///   Absolutwert anzusetzen.
     func intensityMultiplier(maxHeartRate: Double? = nil) -> Double {
-        var factors: [Double] = []
-        if let rpe = perceivedExertion {
-            factors.append(Double(rpe) / 5.0) // RPE 5 ("moderat") = neutral, 1.0x
-        }
-        if let avgHR = averageHeartRate, avgHR > 0 {
+        let hrFactor: Double? = {
+            guard let avgHR = averageHeartRate, avgHR > 0 else { return nil }
             let reference = maxHeartRate.map { $0 * 0.65 } ?? 130.0
-            factors.append(min(max(avgHR / reference, 0.6), 1.8))
+            return min(max(avgHR / reference, 0.6), 1.8)
+        }()
+
+        if let rpe = perceivedExertion {
+            let rpeFactor = Double(rpe) / 5.0 // RPE 5 ("moderat") = neutral, 1.0x
+            guard let hrFactor else { return rpeFactor }
+            // RPE bleibt bei Krafttraining das zuverlässigere Signal: die
+            // Herzfrequenz bleibt durch Satzpausen strukturell niedriger als
+            // bei durchgehender Ausdauerbelastung, selbst wenn sich die
+            // Einheit sehr hart anfühlt - ein 50/50-Mix würde ein bewusst
+            // hoch eingeschätztes RPE sonst unpassend verwässern. Die
+            // Herzfrequenz fließt nur noch als kleinerer Korrekturfaktor ein.
+            return rpeFactor * 0.8 + hrFactor * 0.2
         }
-        guard !factors.isEmpty else { return 1.0 }
-        return factors.reduce(0, +) / Double(factors.count)
+        return hrFactor ?? 1.0
     }
 
     /// Näherungsweise Belastung pro Trainingsminute für importierte

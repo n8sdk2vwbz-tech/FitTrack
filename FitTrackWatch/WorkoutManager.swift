@@ -54,8 +54,10 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// bleibt (z.B. App im Hintergrund weiterhin aktiv), aber nie explizit
     /// "Beenden" gesendet hat. Ohne dieses zweite, unabhängige Sicherheitsnetz
     /// könnte eine Session sonst unbegrenzt "aktiv" bleiben, obwohl real
-    /// längst kein Training mehr stattfindet.
-    private let maxRemoteSessionDuration: TimeInterval = 60 * 60
+    /// längst kein Training mehr stattfindet. War zuvor bei 60 Minuten - das
+    /// hat reguläre, längere Krafttrainings-Einheiten vorzeitig beendet und
+    /// dabei die Herzfrequenz-Aufzeichnung mitten im Training gestoppt.
+    private let maxRemoteSessionDuration: TimeInterval = 3 * 60 * 60
 
     var currentPlanItem: PlanItemDTO? {
         guard let planDay, planDay.items.indices.contains(currentExerciseIndex) else { return nil }

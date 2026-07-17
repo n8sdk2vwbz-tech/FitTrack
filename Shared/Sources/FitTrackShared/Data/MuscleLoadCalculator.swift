@@ -51,6 +51,17 @@ public enum MuscleLoadCalculator {
     private static let acuteSpanDays = 3.0
     private static let chronicSpanDays = 28.0
 
+    /// Ab dieser Anzahl Tage seit dem ersten Belastungs-Ereignis für einen
+    /// Muskel wird die chronische (28-Tage-)Basis als aussagekräftig genug
+    /// angesehen, um daraus "erhöhte"/"hohe Belastung" abzuleiten. Direkt am
+    /// Anfang (z.B. die erste jemals getrackte Einheit für einen bestimmten
+    /// Muskel, oder wenn `.cardio`-Events neu hinzugekommen sind) ist die
+    /// chronische EWMA noch kaum eingeschwungen (praktisch 0) - dadurch würde
+    /// selbst eine einzelne moderate Einheit rechnerisch ein extremes
+    /// Verhältnis ergeben und fälschlich als Überlastung erscheinen, obwohl
+    /// es sich nur um einen Kaltstart-Effekt ohne echte Vergleichsbasis handelt.
+    private static let minHistoryDaysForElevatedClassification = 14
+
     public static func status(for events: [MuscleLoadEvent], asOf: Date = .now, calendar: Calendar = .current) -> [MuscleGroup: MuscleLoadStatus] {
         var result: [MuscleGroup: MuscleLoadStatus] = [:]
         let grouped = Dictionary(grouping: events, by: { $0.muscle })
@@ -94,14 +105,22 @@ public enum MuscleLoadCalculator {
         let acwr = ewmaChronic > 0.01 ? ewmaAcute / ewmaChronic : (ewmaAcute > 0 ? 2.0 : 0)
         let daysSince = lastTrainedDay.flatMap { calendar.dateComponents([.day], from: $0, to: today).day }
 
+        let daysOfHistory = calendar.dateComponents([.day], from: firstDate, to: today).day ?? 0
+        let hasEnoughHistory = daysOfHistory >= minHistoryDaysForElevatedClassification
+        // Ohne genug Historie nach oben auf den "optimal"-Bereich gedeckelt,
+        // statt einen Kaltstart-Ausschlag als "erhöht"/"hoch" zu werten (siehe
+        // `minHistoryDaysForElevatedClassification`) - `acwr` selbst bleibt
+        // unten im Status unverändert für Transparenz/Debugging erhalten.
+        let classificationAcwr = hasEnoughHistory ? acwr : min(acwr, 1.3)
+
         let level: FatigueLevel
         if ewmaChronic <= 0.01 && ewmaAcute <= 0.01 {
             level = .noData
-        } else if acwr < 0.8 {
+        } else if classificationAcwr < 0.8 {
             level = .fresh
-        } else if acwr <= 1.3 {
+        } else if classificationAcwr <= 1.3 {
             level = .optimal
-        } else if acwr <= 1.5 {
+        } else if classificationAcwr <= 1.5 {
             level = .elevated
         } else {
             level = .highStrain
