@@ -105,6 +105,11 @@ struct ActiveWorkoutView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        if let notes = live.planItem?.notes, !notes.isEmpty {
+                            Label(notes, systemImage: "note.text")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
 
                         ForEach(Array($live.sets.enumerated()), id: \.element.id) { index, $set in
                             HStack(spacing: 6) {
@@ -227,10 +232,17 @@ struct ActiveWorkoutView: View {
             // stammen) - jeder Plan-Eintrag führt sein eigenes, unabhängiges
             // Gewichts-Gedächtnis. Wurde dieser Eintrag noch nie ausgeführt,
             // startet er bei 0 und muss manuell befüllt werden.
-            let workWeight = item.targetWeightKg ?? 0
+            let rememberedWeight = item.targetWeightKg ?? 0
+            // Wurde eine Gewichtssteigerung vorgemerkt, hier einmalig einen
+            // Plattenschritt draufschlagen - `pendingWeightIncrease` wird erst
+            // in `updatePlanMemory` nach Abschluss dieser Einheit zurückgesetzt,
+            // ein Abbruch ohne Abschluss lässt die Vormerkung also bestehen.
+            let workWeight = (item.pendingWeightIncrease && rememberedWeight > 0)
+                ? roundToRealisticWeight(rememberedWeight + 2.5)
+                : rememberedWeight
 
-            var sets: [LiveSet] = warmupWeights(workWeight: workWeight, count: item.warmupSetCount).map { weight in
-                LiveSet(reps: item.targetReps, weightKg: weight, isWarmup: true)
+            var sets: [LiveSet] = warmupSets(workWeight: workWeight, workReps: item.targetReps, count: item.warmupSetCount).map { warmup in
+                LiveSet(reps: warmup.reps, weightKg: warmup.weight, isWarmup: true)
             }
             sets += (0..<max(item.targetSets, 1)).map { _ in
                 LiveSet(reps: item.targetReps, weightKg: workWeight, isWarmup: false)
@@ -249,15 +261,24 @@ struct ActiveWorkoutView: View {
         }
     }
 
-    /// Berechnet realistisch gerundete Aufwärmgewichte als ansteigende Rampe
-    /// von ca. 40% bis 85% des Arbeitsgewichts (bei nur einem Aufwärmsatz 50%).
-    private func warmupWeights(workWeight: Double, count: Int) -> [Double] {
+    /// Berechnet Aufwärmsätze als ansteigende Gewichts-Rampe von ca. 40% bis
+    /// 85% des Arbeitsgewichts (bei nur einem Aufwärmsatz 50%), mit dazu
+    /// passend ABNEHMENDER Wiederholungszahl: großzügig beim leichten
+    /// Aktivierungssatz, nur noch sehr wenige kurz vor dem Arbeitsgewicht -
+    /// statt bei jedem Aufwärmsatz identisch viele Wiederholungen wie im
+    /// Arbeitssatz vorzuschlagen.
+    private func warmupSets(workWeight: Double, workReps: Int, count: Int) -> [(weight: Double, reps: Int)] {
         guard count > 0 else { return [] }
-        guard workWeight > 0 else { return Array(repeating: 0, count: count) }
-        guard count > 1 else { return [roundToRealisticWeight(workWeight * 0.5)] }
+        guard workWeight > 0 else { return Array(repeating: (0, workReps), count: count) }
+        guard count > 1 else { return [(roundToRealisticWeight(workWeight * 0.5), max(workReps, 6))] }
+
+        let generousReps = max(workReps + 2, 6)
         return (0..<count).map { i in
             let fraction = 0.4 + 0.45 * Double(i) / Double(count - 1)
-            return roundToRealisticWeight(workWeight * fraction)
+            let weight = roundToRealisticWeight(workWeight * fraction)
+            let rampFraction = Double(i) / Double(count - 1) // 0 = leichtester, 1 = schwerster Aufwärmsatz
+            let reps = generousReps - Int((Double(generousReps - 2) * rampFraction).rounded())
+            return (weight, max(2, reps))
         }
     }
 
@@ -365,6 +386,7 @@ struct ActiveWorkoutView: View {
             guard let lastSet = completedWorkSets.last else { continue }
             planItem.targetWeightKg = lastSet.weightKg
             planItem.targetReps = lastSet.reps
+            planItem.pendingWeightIncrease = false
             didChange = true
         }
         // `planItem` gehört zum Plans-Container, nicht zum hier ambient

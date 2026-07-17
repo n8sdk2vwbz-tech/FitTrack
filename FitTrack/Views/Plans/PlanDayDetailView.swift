@@ -144,6 +144,22 @@ private struct PlanItemRow: View {
                         .font(.caption)
                 }
             }
+
+            Button {
+                item.pendingWeightIncrease.toggle()
+            } label: {
+                Label(
+                    item.pendingWeightIncrease ? "Gewicht wird nächstes Mal gesteigert" : "Gewicht nächstes Mal steigern",
+                    systemImage: item.pendingWeightIncrease ? "checkmark.circle.fill" : "arrow.up.circle"
+                )
+                .font(.caption)
+                .foregroundStyle(item.pendingWeightIncrease ? .green : .accentColor)
+            }
+            .buttonStyle(.plain)
+
+            TextField("Notiz zu dieser Übung (optional)", text: $item.notes, axis: .vertical)
+                .font(.caption)
+                .lineLimit(1...3)
         }
         .padding(.vertical, 4)
     }

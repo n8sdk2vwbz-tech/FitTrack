@@ -267,8 +267,15 @@ final class PlanItem {
     /// Plan-Generator befüllt, bei manuell hinzugefügten Übungen leer.
     var alternativeExerciseIds: [String] = []
     var alternativeExerciseNames: [String] = []
+    /// Frei editierbare Notiz zu dieser Übung an dieser Stelle im Plan (z.B.
+    /// Ausführungshinweise, Sitzeinstellung am Gerät).
+    var notes: String = ""
+    /// Vormerkung, das Gewicht in der nächsten Einheit zu steigern - schlägt
+    /// beim nächsten Trainingsstart automatisch eine höhere Startgewicht vor
+    /// und wird danach automatisch zurückgesetzt (siehe `ActiveWorkoutView`).
+    var pendingWeightIncrease: Bool = false
 
-    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = []) {
+    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = [], notes: String = "", pendingWeightIncrease: Bool = false) {
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
         self.targetSets = targetSets
@@ -278,6 +285,8 @@ final class PlanItem {
         self.order = order
         self.alternativeExerciseIds = alternativeExerciseIds
         self.alternativeExerciseNames = alternativeExerciseNames
+        self.notes = notes
+        self.pendingWeightIncrease = pendingWeightIncrease
     }
 
     func toDTO() -> PlanItemDTO {
