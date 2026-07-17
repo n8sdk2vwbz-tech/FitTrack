@@ -54,6 +54,7 @@ struct PlanDayDetailView: View {
         }
         .navigationTitle(day.name)
         .navigationBarTitleDisplayMode(.inline)
+        .scrollDismissesKeyboard(.interactively)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 EditButton()
@@ -114,6 +115,7 @@ struct PlanDayDetailView: View {
 
 private struct PlanItemRow: View {
     @Bindable var item: PlanItem
+    @FocusState private var isNotesFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -160,6 +162,16 @@ private struct PlanItemRow: View {
             TextField("Notiz zu dieser Übung (optional)", text: $item.notes, axis: .vertical)
                 .font(.caption)
                 .lineLimit(1...3)
+                .focused($isNotesFocused)
+                .toolbar {
+                    // Mehrzeiliges TextField (axis: .vertical) schließt die
+                    // Tastatur nicht per Return - ohne diese Taste gäbe es
+                    // sonst keine Möglichkeit, sie wieder wegzuklappen.
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Fertig") { isNotesFocused = false }
+                    }
+                }
         }
         .padding(.vertical, 4)
     }

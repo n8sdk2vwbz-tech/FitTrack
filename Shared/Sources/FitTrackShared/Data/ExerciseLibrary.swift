@@ -78,6 +78,7 @@ public enum ExerciseLibrary {
         Exercise(id: "plank", name: "Plank", category: .strength, equipment: .bodyweight, primaryMuscles: [.abs], secondaryMuscles: [.lowerBack], instructions: "Körperspannung im Unterarmstütz halten."),
         Exercise(id: "hanging-leg-raise", name: "Beinheben hängend", category: .strength, equipment: .bodyweight, primaryMuscles: [.abs], secondaryMuscles: [.forearms], instructions: "An der Stange hängend die Beine kontrolliert anheben."),
         Exercise(id: "cable-crunch", name: "Cable Crunch", category: .strength, equipment: .cable, primaryMuscles: [.abs], secondaryMuscles: [], instructions: "Kniend am Kabelzug den Oberkörper einrollen."),
+        Exercise(id: "ab-crunch-machine", name: "Crunch an der Maschine", category: .strength, equipment: .machine, primaryMuscles: [.abs], secondaryMuscles: [], instructions: "Oberkörper gegen den Widerstand einrollen, kontrolliert zurückführen."),
         Exercise(id: "russian-twist", name: "Russian Twists", category: .strength, equipment: .bodyweight, primaryMuscles: [.obliques], secondaryMuscles: [.abs], instructions: "Im Sitzen den Oberkörper mit Rotation von Seite zu Seite bewegen."),
         Exercise(id: "ab-wheel-rollout", name: "Ab Wheel Rollout", category: .strength, equipment: .none, primaryMuscles: [.abs], secondaryMuscles: [.lowerBack, .shoulders], instructions: "Mit dem Ab-Roller kontrolliert nach vorne rollen und zurückziehen."),
         Exercise(id: "mountain-climber", name: "Mountain Climbers", category: .cardio, equipment: .bodyweight, primaryMuscles: [.abs], secondaryMuscles: [.cardio], instructions: "Im Stütz die Knie abwechselnd zügig zur Brust ziehen."),
@@ -127,6 +128,7 @@ public enum ExerciseLibrary {
 
         // MARK: Cardio
         Exercise(id: "running", name: "Laufen", category: .cardio, equipment: .none, primaryMuscles: [.cardio], secondaryMuscles: [.quads, .hamstrings, .calves], instructions: "Gleichmäßiges Lauftempo im Zielpulsbereich halten."),
+        Exercise(id: "walking", name: "Gehen", category: .cardio, equipment: .none, primaryMuscles: [.cardio], secondaryMuscles: [.calves], instructions: "Zügiges, gleichmäßiges Gehtempo. Deutlich geringere Stoßbelastung für die Beine als Laufen."),
         Exercise(id: "cycling", name: "Radfahren", category: .cardio, equipment: .bike, primaryMuscles: [.cardio], secondaryMuscles: [.quads, .calves], instructions: "Konstante Trittfrequenz im Zielpulsbereich."),
         Exercise(id: "rowing-machine", name: "Rudergerät", category: .cardio, equipment: .machine, primaryMuscles: [.cardio], secondaryMuscles: [.upperBack, .quads], instructions: "Beine, Rücken und Arme im Rudertakt koordiniert einsetzen."),
         Exercise(id: "jump-rope", name: "Seilspringen", category: .cardio, equipment: .none, primaryMuscles: [.cardio], secondaryMuscles: [.calves], instructions: "Gleichmäßige, kurze Sprünge über das Seil."),

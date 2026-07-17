@@ -347,7 +347,8 @@ public extension HKWorkoutActivityType {
     /// training ohne Satz-/Wiederholungsdaten in HealthKit).
     var cardioExerciseLibraryId: String? {
         switch self {
-        case .running, .walking, .hiking: return "running"
+        case .running, .hiking: return "running"
+        case .walking: return "walking"
         case .cycling: return "cycling"
         case .rowing: return "rowing-machine"
         case .jumpRope: return "jump-rope"
