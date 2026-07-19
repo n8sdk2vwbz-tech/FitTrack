@@ -31,13 +31,19 @@ private struct KeyboardDoneButtonModifier: ViewModifier {
         content
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
-                if keyboard.isVisible {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Fertig") {
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
-                        .fontWeight(.semibold)
+                // Bewusst IMMER genau ein ToolbarItem deklariert (nur Sichtbarkeit
+                // per Opacity/allowsHitTesting umgeschaltet) statt es bedingt
+                // hinzuzufügen/zu entfernen - Letzteres hat in dieser App
+                // innerhalb von .fullScreenCover/verschachtelten Listen dazu
+                // geführt, dass während der Ein-/Ausblend-Animation kurzzeitig
+                // ein zusätzliches, nicht mehr reagierendes Duplikat sichtbar war.
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Fertig") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
+                    .fontWeight(.semibold)
+                    .opacity(keyboard.isVisible ? 1 : 0)
+                    .allowsHitTesting(keyboard.isVisible)
                 }
             }
     }

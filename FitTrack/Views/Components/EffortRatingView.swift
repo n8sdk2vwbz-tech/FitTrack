@@ -41,6 +41,10 @@ struct RateEffortView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
+    private var totalVolumeKg: Double {
+        session.entries.reduce(0.0) { $0 + $1.totalVolume }
+    }
+
     var body: some View {
         VStack(spacing: 28) {
             HStack {
@@ -66,6 +70,16 @@ struct RateEffortView: View {
             Text("Anstrengung bewerten")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
+
+            if totalVolumeKg > 0 {
+                VStack(spacing: 2) {
+                    Text("\(Int(totalVolumeKg.rounded())) kg")
+                        .font(.title.bold())
+                    Text("insgesamt bewegtes Gewicht")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             EffortRatingBars(rating: $session.perceivedExertion)
                 .frame(height: 100)

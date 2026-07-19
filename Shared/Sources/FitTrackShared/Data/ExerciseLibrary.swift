@@ -6,6 +6,7 @@ public enum ExerciseLibrary {
     public static let all: [Exercise] = [
         // MARK: Brust
         Exercise(id: "bench-press-barbell", name: "Bankdrücken (Langhantel)", category: .strength, equipment: .barbell, primaryMuscles: [.chest], secondaryMuscles: [.triceps, .shoulders], instructions: "Langhantel auf der Flachbank zur Brust senken und explosiv nach oben drücken."),
+        Exercise(id: "smith-machine-bench-press", name: "Bankdrücken (Smith Machine)", category: .strength, equipment: .machine, primaryMuscles: [.chest], secondaryMuscles: [.triceps, .shoulders], instructions: "Stange in der geführten Bahn zur Brust senken und hochdrücken."),
         Exercise(id: "bench-press-dumbbell", name: "Bankdrücken (Kurzhantel)", category: .strength, equipment: .dumbbell, primaryMuscles: [.chest], secondaryMuscles: [.triceps, .shoulders], instructions: "Kurzhanteln auf Brusthöhe senken, kontrolliert nach oben drücken."),
         Exercise(id: "incline-bench-press", name: "Schrägbankdrücken", category: .strength, equipment: .barbell, primaryMuscles: [.chest], secondaryMuscles: [.shoulders, .triceps], instructions: "Auf der Schrägbank (30-45°) die Langhantel zur oberen Brust senken."),
         Exercise(id: "dumbbell-fly", name: "Kurzhantel Fliegende", category: .strength, equipment: .dumbbell, primaryMuscles: [.chest], secondaryMuscles: [.shoulders], instructions: "Mit leicht gebeugten Armen die Kurzhanteln seitlich absenken und die Brust zusammenziehen."),
@@ -96,6 +97,7 @@ public enum ExerciseLibrary {
         // MARK: Gesäß
         Exercise(id: "hip-thrust", name: "Hip Thrust", category: .strength, equipment: .barbell, primaryMuscles: [.glutes], secondaryMuscles: [.hamstrings], instructions: "Mit Schulterblättern auf der Bank die Hüfte nach oben drücken."),
         Exercise(id: "back-squat", name: "Kniebeuge (Langhantel)", category: .strength, equipment: .barbell, primaryMuscles: [.quads, .glutes], secondaryMuscles: [.hamstrings, .lowerBack], instructions: "Langhantel im Nacken, Hüfte tief unter die Kniehöhe absenken."),
+        Exercise(id: "smith-machine-squat", name: "Kniebeuge (Smith Machine)", category: .strength, equipment: .machine, primaryMuscles: [.quads, .glutes], secondaryMuscles: [.hamstrings], instructions: "In der geführten Bahn die Hüfte tief unter die Kniehöhe absenken."),
         Exercise(id: "bulgarian-split-squat", name: "Bulgarian Split Squat", category: .strength, equipment: .dumbbell, primaryMuscles: [.quads, .glutes], secondaryMuscles: [.hamstrings], instructions: "Hinterer Fuß erhöht, vorderes Bein tief beugen."),
         Exercise(id: "glute-bridge", name: "Glute Bridge", category: .strength, equipment: .bodyweight, primaryMuscles: [.glutes], secondaryMuscles: [.hamstrings], instructions: "Rückenlage, Hüfte anheben und Gesäß anspannen."),
         Exercise(id: "cable-glute-kickback", name: "Kickback (Kabel)", category: .strength, equipment: .cable, primaryMuscles: [.glutes], secondaryMuscles: [.hamstrings], instructions: "Bein am Kabelzug nach hinten oben strecken."),

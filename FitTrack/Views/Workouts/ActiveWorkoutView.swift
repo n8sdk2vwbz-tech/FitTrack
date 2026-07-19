@@ -115,6 +115,19 @@ struct ActiveWorkoutView: View {
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
+                        if let planItem = live.planItem {
+                            Button {
+                                planItem.pendingWeightIncrease.toggle()
+                            } label: {
+                                Label(
+                                    planItem.pendingWeightIncrease ? "Gewicht wird nächstes Mal gesteigert" : "Gewicht nächstes Mal steigern",
+                                    systemImage: planItem.pendingWeightIncrease ? "checkmark.circle.fill" : "arrow.up.circle"
+                                )
+                                .font(.caption)
+                                .foregroundStyle(planItem.pendingWeightIncrease ? .green : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
 
                         ForEach(Array($live.sets.enumerated()), id: \.element.id) { index, $set in
                             HStack(spacing: 6) {
