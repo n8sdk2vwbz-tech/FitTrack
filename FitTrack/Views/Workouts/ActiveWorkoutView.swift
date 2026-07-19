@@ -128,6 +128,15 @@ struct ActiveWorkoutView: View {
                             }
                             .buttonStyle(.plain)
                         }
+                        if live.sets.contains(where: { $0.isWarmup }) {
+                            Button {
+                                recalculateWarmups(for: $live)
+                            } label: {
+                                Label("Aufwärmsätze anhand aktuellem Gewicht aktualisieren", systemImage: "arrow.clockwise")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+                        }
 
                         ForEach(Array($live.sets.enumerated()), id: \.element.id) { index, $set in
                             HStack(spacing: 6) {
@@ -298,6 +307,25 @@ struct ActiveWorkoutView: View {
             let reps = generousReps - Int((Double(generousReps - 2) * rampFraction).rounded())
             return (weight, max(2, reps))
         }
+    }
+
+    /// Berechnet die Aufwärmsätze einer Übung anhand des aktuell im ersten
+    /// Arbeitssatz eingetragenen Gewichts neu und ersetzt die bisherigen
+    /// Aufwärmsätze damit - nötig, weil `setupFromPlanIfNeeded` sie nur
+    /// einmalig beim Trainingsstart aus dem gespeicherten Gewicht berechnet.
+    /// War das noch nicht gesetzt (z.B. bei einer neuen Übung ohne Historie),
+    /// bleiben sie sonst dauerhaft bei 0 kg/gleicher Wiederholungszahl stehen,
+    /// auch nachdem das echte Gewicht für heute eingetragen wurde.
+    private func recalculateWarmups(for live: Binding<LiveExercise>) {
+        let workSets = live.wrappedValue.sets.filter { !$0.isWarmup }
+        let workWeight = workSets.first?.weightKg ?? 0
+        let workReps = workSets.first?.reps ?? live.wrappedValue.targetReps
+        let warmupCount = live.wrappedValue.sets.filter(\.isWarmup).count
+        let newWarmups = warmupSets(workWeight: workWeight, workReps: workReps, count: warmupCount).map {
+            LiveSet(reps: $0.reps, weightKg: $0.weight, isWarmup: true)
+        }
+        live.wrappedValue.sets.removeAll { $0.isWarmup }
+        live.wrappedValue.sets.insert(contentsOf: newWarmups, at: 0)
     }
 
     /// Rundet auf ein in Fitnessstudios übliches Plattenschritt-Raster
