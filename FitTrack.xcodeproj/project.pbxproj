@@ -16,6 +16,7 @@
 		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
 		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
 		40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */; };
+		4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AC20A80C5B115A61B5486A /* ImportPlanView.swift */; };
 		42C72242A3B32535E2099818 /* StartWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */; };
 		44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */; };
 		4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */; };
@@ -33,6 +34,7 @@
 		95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0EB6D74DC3DB7E80C889336A /* Assets.xcassets */; };
 		9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */; };
 		A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181778660D0A233239C1AEE8 /* DashboardView.swift */; };
+		B29253509B94554E8B7FBE24 /* SharePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */; };
 		BAF2E6C04A28239FA47C916B /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = A226CB3FDA21209397ACF82D /* FitTrackShared */; };
 		C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */; };
 		C3E8DAC7ADCA94692F8F1FFB /* FitTrackWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B8111A1D48406ECDA1841684 /* FitTrackWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -76,6 +78,7 @@
 		08F2E63D3FAFD0F059A271B1 /* Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shared; path = Shared; sourceTree = SOURCE_ROOT; };
 		0EB6D74DC3DB7E80C889336A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		125578C49FC616DBEE8F83AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePlanView.swift; sourceTree = "<group>"; };
 		1619974B38585E7316A89052 /* IntAdjuster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntAdjuster.swift; sourceTree = "<group>"; };
 		181778660D0A233239C1AEE8 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDayDetailView.swift; sourceTree = "<group>"; };
@@ -86,6 +89,7 @@
 		3899B6473B8E615422764613 /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
 		3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleHeatmapView.swift; sourceTree = "<group>"; };
+		45AC20A80C5B115A61B5486A /* ImportPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPlanView.swift; sourceTree = "<group>"; };
 		55458F2FF281E4BF301C4BB3 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrack.entitlements; sourceTree = "<group>"; };
 		5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
@@ -251,8 +255,10 @@
 			children = (
 				06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */,
 				253C621FEB179B544870220D /* GeneratePlanView.swift */,
+				45AC20A80C5B115A61B5486A /* ImportPlanView.swift */,
 				1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */,
 				76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */,
+				13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */,
 				3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */,
 			);
 			path = Plans;
@@ -428,6 +434,7 @@
 				CEC6B2A2BFC4004002B33864 /* FitTrackApp.swift in Sources */,
 				1F9024259FBEAF011B328154 /* GeneratePlanView.swift in Sources */,
 				9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */,
+				4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */,
 				1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */,
 				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
 				5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */,
@@ -435,6 +442,7 @@
 				81A56FB40516EC9B06C8CD5D /* PlanDetailView.swift in Sources */,
 				44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */,
 				D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */,
+				B29253509B94554E8B7FBE24 /* SharePlanView.swift in Sources */,
 				7302788ABF8BE9BBE5DC450A /* TrainingPlansView.swift in Sources */,
 				581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */,
 				C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */,

@@ -6,6 +6,7 @@ import FitTrackShared
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var connectivity = WatchConnectivityManager.shared
+    @State private var pendingSharedPlan: SharedPlanDTO?
 
     var body: some View {
         TabView {
@@ -29,6 +30,12 @@ struct RootView: View {
         .onChange(of: connectivity.receivedCompletedWorkout) { _, newValue in
             guard let dto = newValue else { return }
             Task { await importCompletedWorkout(dto) }
+        }
+        .onOpenURL { url in
+            pendingSharedPlan = PlanSharePayload.decode(from: url)
+        }
+        .sheet(item: $pendingSharedPlan) { sharedPlan in
+            ImportPlanView(sharedPlan: sharedPlan)
         }
     }
 

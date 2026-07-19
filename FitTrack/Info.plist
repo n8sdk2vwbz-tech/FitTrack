@@ -35,5 +35,16 @@
 	<string>ReadyLift liest Schlaf-, Herzfrequenz- und Aktivitätsdaten, um deine Regeneration und Trainingsbelastung einzuschätzen.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>ReadyLift speichert deine Workouts in Health, damit sie in Health und auf der Apple Watch verfügbar sind.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.maximtschitschko.fittrack.planshare</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>readylift</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -301,6 +301,12 @@ final class PlanItem {
     func toDTO() -> PlanItemDTO {
         PlanItemDTO(id: UUID().uuidString, exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, targetWeightKg: targetWeightKg)
     }
+
+    /// Für das Teilen eines Plans mit einer anderen Person - bewusst ohne
+    /// Gewicht/Steigerungs-Merker/Alternativen (siehe `SharedPlanItemDTO`).
+    func toSharedDTO() -> SharedPlanItemDTO {
+        SharedPlanItemDTO(exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, warmupSetCount: warmupSetCount, notes: notes)
+    }
 }
 
 @Model
@@ -318,6 +324,10 @@ final class PlanDay {
     var itemList: [PlanItem] {
         get { items ?? [] }
         set { items = newValue }
+    }
+
+    func toSharedDTO() -> SharedPlanDayDTO {
+        SharedPlanDayDTO(name: name, items: itemList.sorted { $0.order < $1.order }.map { $0.toSharedDTO() })
     }
 }
 
@@ -340,5 +350,34 @@ final class TrainingPlan {
     var dayList: [PlanDay] {
         get { days ?? [] }
         set { days = newValue }
+    }
+
+    func toSharedDTO() -> SharedPlanDTO {
+        SharedPlanDTO(name: name, notes: notes, days: dayList.sorted { $0.order < $1.order }.map { $0.toSharedDTO() })
+    }
+}
+
+extension SharedPlanDTO {
+    /// Baut einen neuen, eigenständigen Plan aus einem geteilten Plan auf -
+    /// jeder Übungs-Eintrag startet bewusst ohne Gewicht (`targetWeightKg:
+    /// nil`), da die Belastbarkeit individuell ist und nicht von der
+    /// teilenden Person übernommen werden soll.
+    func makePlan() -> TrainingPlan {
+        let planDays: [PlanDay] = days.enumerated().map { dayIndex, day in
+            let items: [PlanItem] = day.items.enumerated().map { itemIndex, item in
+                PlanItem(
+                    exerciseId: item.exerciseId,
+                    exerciseName: item.exerciseName,
+                    targetSets: item.targetSets,
+                    targetReps: item.targetReps,
+                    targetWeightKg: nil,
+                    warmupSetCount: item.warmupSetCount,
+                    order: itemIndex,
+                    notes: item.notes
+                )
+            }
+            return PlanDay(name: day.name, order: dayIndex, items: items)
+        }
+        return TrainingPlan(name: name, notes: notes, days: planDays)
     }
 }

@@ -5,6 +5,7 @@ import FitTrackShared
 struct PlanDetailView: View {
     @Bindable var plan: TrainingPlan
     @Environment(\.modelContext) private var modelContext
+    @State private var showingShareSheet = false
 
     var body: some View {
         List {
@@ -37,6 +38,18 @@ struct PlanDetailView: View {
         }
         .navigationTitle(plan.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showingShareSheet = true
+                } label: {
+                    Label("Teilen", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            SharePlanView(plan: plan)
+        }
     }
 
     private func addDay() {

@@ -140,6 +140,79 @@ public struct RemoteWorkoutResultDTO: Codable, Hashable {
     }
 }
 
+// MARK: - Plan sharing (Export/Import zwischen Geräten/Nutzern per Link/QR-Code)
+// Bewusst OHNE Gewichte, Steigerungs-Merker und Alternativen - das sind
+// persönliche Fortschritts-/Geräte-Daten, die beim Teilen eines Plans nicht
+// sinnvoll auf eine andere Person übertragbar sind. Notizen werden bewusst
+// übernommen. Kurze CodingKeys, damit der codierte Link/QR-Code möglichst
+// kompakt bleibt (siehe `PlanSharePayload`).
+
+public struct SharedPlanItemDTO: Codable, Hashable {
+    public let exerciseId: String
+    public let exerciseName: String
+    public let targetSets: Int
+    public let targetReps: Int
+    public let warmupSetCount: Int
+    public let notes: String
+
+    private enum CodingKeys: String, CodingKey {
+        case exerciseId = "e"
+        case exerciseName = "n"
+        case targetSets = "s"
+        case targetReps = "r"
+        case warmupSetCount = "w"
+        case notes = "o"
+    }
+
+    public init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, warmupSetCount: Int, notes: String) {
+        self.exerciseId = exerciseId
+        self.exerciseName = exerciseName
+        self.targetSets = targetSets
+        self.targetReps = targetReps
+        self.warmupSetCount = warmupSetCount
+        self.notes = notes
+    }
+}
+
+public struct SharedPlanDayDTO: Codable, Hashable {
+    public let name: String
+    public let items: [SharedPlanItemDTO]
+
+    private enum CodingKeys: String, CodingKey {
+        case name = "n"
+        case items = "i"
+    }
+
+    public init(name: String, items: [SharedPlanItemDTO]) {
+        self.name = name
+        self.items = items
+    }
+}
+
+public struct SharedPlanDTO: Codable, Hashable {
+    public let name: String
+    public let notes: String
+    public let days: [SharedPlanDayDTO]
+
+    private enum CodingKeys: String, CodingKey {
+        case name = "n"
+        case notes = "o"
+        case days = "d"
+    }
+
+    public init(name: String, notes: String, days: [SharedPlanDayDTO]) {
+        self.name = name
+        self.notes = notes
+        self.days = days
+    }
+}
+
+extension SharedPlanDTO: Identifiable {
+    /// Für `.sheet(item:)` beim Import - keine persistente Identität nötig,
+    /// da dieser Wert nur kurzlebig für den Bestätigungs-Dialog existiert.
+    public var id: Int { hashValue }
+}
+
 // MARK: - Muscle load transfer events
 
 /// Ein einzelner, zeitlich verorteter Belastungsimpuls auf einen Muskel.
