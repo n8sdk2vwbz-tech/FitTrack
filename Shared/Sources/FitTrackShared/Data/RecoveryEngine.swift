@@ -25,11 +25,18 @@ public struct RecoveryInputs {
     /// Tage hinweg abklingen, statt sie unbegrenzt lange (auch nach einer
     /// Woche ohne neues Training) unverändert voll wirken zu lassen.
     public var daysSinceRecentSession: Double?
+    /// Persönlicher Median der Sitzungs-Last aus früheren Einheiten (ohne die
+    /// aktuellste), sobald genug Historie existiert - macht `recentSessionLoad`
+    /// relativ zum eigenen typischen Volumen statt gegen einen für alle
+    /// gleichen absoluten Richtwert zu bewerten (siehe `RecoveryEngine`s
+    /// Kommentar zu `typicalSessionLoad`). `nil`, solange zu wenig Historie
+    /// existiert, um verlässlich zu sein.
+    public var personalTypicalSessionLoad: Double?
     /// Gewichteter Schnitt der wahrgenommenen Anstrengung (RPE und/oder
     /// Trainings-Herzfrequenz) der letzten ca. 2 Tage, 1.0 = neutral (RPE 5).
     public var recentIntensity: Double?
 
-    public init(sleepHours: Double?, sleepEfficiency: Double?, hrvMs: Double?, hrvBaselineMs: Double?, restingHeartRate: Double?, restingHeartRateBaseline: Double?, acuteLoad: Double, chronicLoad: Double, sessionCount: Int, recentSessionLoad: Double, daysSinceRecentSession: Double?, recentIntensity: Double?) {
+    public init(sleepHours: Double?, sleepEfficiency: Double?, hrvMs: Double?, hrvBaselineMs: Double?, restingHeartRate: Double?, restingHeartRateBaseline: Double?, acuteLoad: Double, chronicLoad: Double, sessionCount: Int, recentSessionLoad: Double, daysSinceRecentSession: Double?, personalTypicalSessionLoad: Double? = nil, recentIntensity: Double?) {
         self.sleepHours = sleepHours
         self.sleepEfficiency = sleepEfficiency
         self.hrvMs = hrvMs
@@ -41,6 +48,7 @@ public struct RecoveryInputs {
         self.sessionCount = sessionCount
         self.recentSessionLoad = recentSessionLoad
         self.daysSinceRecentSession = daysSinceRecentSession
+        self.personalTypicalSessionLoad = personalTypicalSessionLoad
         self.recentIntensity = recentIntensity
     }
 }
@@ -120,9 +128,14 @@ public enum RecoveryEngine {
 
     /// Heuristischer Referenzwert für eine "durchschnittliche" Trainingseinheit
     /// (Volumen = Gewicht × Wiederholungen, summiert über alle beteiligten
-    /// Muskeln). Dient als generischer Vergleichsmaßstab, solange noch keine
-    /// eigene Trainingshistorie existiert (z.B. beim allerersten Training) -
-    /// grob kalibriert an 2-3 Übungen à 3 Sätzen mit moderatem Gewicht.
+    /// Muskeln). Dient nur als genereller Vergleichsmaßstab, solange noch
+    /// keine eigene Trainingshistorie existiert (`personalTypicalSessionLoad`
+    /// ist dann `nil`) - grob kalibriert an 2-3 Übungen à 3 Sätzen mit
+    /// moderatem Gewicht. Ein fester, für alle gleicher Wert würde sonst
+    /// dauerhaft jeden, der mit geringerem absolutem Gewicht trainiert (z.B.
+    /// kleiner/schwächer, oder bei Isolationsübungen), praktisch immer bei
+    /// 100 belassen - unabhängig davon, wie hart sich die Einheit für diese
+    /// Person tatsächlich anfühlte.
     private static let typicalSessionLoad = 1500.0
 
     /// Nach wie vielen Tagen die Wirkung der zuletzt protokollierten Einheit
@@ -190,14 +203,22 @@ public enum RecoveryEngine {
         var loadScoreParts: [Double] = []
 
         // (1) Immer verfügbar, ab der allerersten Einheit: Volumen der
-        // zuletzt protokollierten Einheit gegen einen generischen Referenzwert
-        // (`typicalSessionLoad`), da vor der ersten Einheit noch keine eigene
-        // Historie existiert, gegen die man vergleichen könnte. Klingt über
-        // `recentSessionLoadFadeDays` Tage auf neutral (100) ab, statt eine
-        // einzelne, länger zurückliegende Einheit unbegrenzt lange (z.B. auch
-        // nach einer Woche ohne neues Training) unverändert voll wirken zu lassen.
+        // zuletzt protokollierten Einheit gegen den eigenen typischen Wert
+        // (`personalTypicalSessionLoad`), sobald genug Historie existiert -
+        // sonst gegen den generischen `typicalSessionLoad`-Richtwert, da vor
+        // der ersten Einheit noch keine eigene Historie existiert. Relativ
+        // zum eigenen Durchschnitt statt zu einem für alle gleichen absoluten
+        // Wert zu vergleichen ist wichtig, damit z.B. jemand, der grundsätzlich
+        // mit geringerem Gewicht trainiert, bei einer für diese Person
+        // tatsächlich harten Einheit auch einen entsprechend reduzierten Score
+        // sieht - nicht dauerhaft 100, nur weil die absoluten kg-Zahlen klein sind.
+        // Klingt über `recentSessionLoadFadeDays` Tage auf neutral (100) ab,
+        // statt eine einzelne, länger zurückliegende Einheit unbegrenzt lange
+        // (z.B. auch nach einer Woche ohne neues Training) unverändert voll
+        // wirken zu lassen.
         if inputs.recentSessionLoad > 0.01 {
-            let ratio = inputs.recentSessionLoad / typicalSessionLoad
+            let reference = inputs.personalTypicalSessionLoad ?? typicalSessionLoad
+            let ratio = inputs.recentSessionLoad / reference
             let rawScore = loadRatioScore(ratio)
             let age = inputs.daysSinceRecentSession ?? 0
             let fade = clamp(1 - age / recentSessionLoadFadeDays, 0, 1)

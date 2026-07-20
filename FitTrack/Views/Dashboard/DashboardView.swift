@@ -4,6 +4,7 @@ import SwiftData
 struct DashboardView: View {
     @Query(sort: \WorkoutSession.date, order: .reverse) private var sessions: [WorkoutSession]
     @StateObject private var viewModel = DashboardViewModel()
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -30,6 +31,18 @@ struct DashboardView: View {
                 .padding()
             }
             .navigationTitle("Übersicht")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                StravaSettingsView()
+            }
             .task { await viewModel.refresh(sessions: sessions) }
             .refreshable { await viewModel.refresh(sessions: sessions) }
             .onChange(of: sessions.count) {

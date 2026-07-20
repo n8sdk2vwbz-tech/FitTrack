@@ -70,5 +70,6 @@ struct RootView: View {
                 averageHeartRate: dto.averageHeartRate
             )
         }
+        await StravaManager.shared.autoUploadIfNeeded(session: session)
     }
 }

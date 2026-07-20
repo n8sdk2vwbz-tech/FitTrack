@@ -140,6 +140,7 @@ struct LogWorkoutView: View {
         )
         modelContext.insert(session)
         try? modelContext.save()
+        Task { await StravaManager.shared.autoUploadIfNeeded(session: session) }
         dismiss()
     }
 }

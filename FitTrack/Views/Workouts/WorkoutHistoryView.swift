@@ -5,9 +5,12 @@ import Charts
 struct WorkoutHistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \WorkoutSession.date, order: .reverse) private var sessions: [WorkoutSession]
+    @ObservedObject private var strava = StravaManager.shared
     @State private var showingLogSheet = false
     @State private var showingActiveWorkout = false
     @State private var isImporting = false
+    @State private var uploadingSessionId: String?
+    @State private var stravaErrorMessage: String?
 
     private var weeklyVolume: [(weekStart: Date, volume: Double)] {
         let calendar = Calendar.current
@@ -75,6 +78,26 @@ struct WorkoutHistoryView: View {
                             .foregroundStyle(.secondary)
                         }
                     }
+                    .swipeActions(edge: .leading) {
+                        // Bewusst auf der linken Seite: ein eigener rechter
+                        // .swipeActions-Block hätte den automatischen
+                        // Löschen-Button von .onDelete ersetzt statt sich
+                        // damit zu kombinieren - Löschen bleibt so unverändert
+                        // über die rechte Wischgeste erreichbar.
+                        if strava.isConnected {
+                            Button {
+                                Task { await uploadToStrava(session) }
+                            } label: {
+                                if uploadingSessionId == session.id {
+                                    ProgressView()
+                                } else {
+                                    Label("Strava", systemImage: "bolt.fill")
+                                }
+                            }
+                            .tint(Color(red: 0.988, green: 0.298, blue: 0.008))
+                            .disabled(uploadingSessionId != nil)
+                        }
+                    }
                 }
                 .onDelete(perform: deleteSessions)
             }
@@ -123,6 +146,25 @@ struct WorkoutHistoryView: View {
             .refreshable {
                 await importFromHealth()
             }
+            .alert("Strava-Upload fehlgeschlagen", isPresented: Binding(
+                get: { stravaErrorMessage != nil },
+                set: { if !$0 { stravaErrorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(stravaErrorMessage ?? "")
+            }
+        }
+    }
+
+    private func uploadToStrava(_ session: WorkoutSession) async {
+        uploadingSessionId = session.id
+        defer { uploadingSessionId = nil }
+
+        do {
+            try await strava.uploadActivity(for: session)
+        } catch {
+            stravaErrorMessage = error.localizedDescription
         }
     }
 

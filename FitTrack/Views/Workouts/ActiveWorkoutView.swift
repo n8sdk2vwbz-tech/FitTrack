@@ -352,15 +352,26 @@ struct ActiveWorkoutView: View {
     }
 
     /// Beendet das Training: stoppt die Herzfrequenzmessung auf der Watch und
-    /// wartet kurz auf deren Abschlusswerte (Kalorien, Ø-Herzfrequenz), bevor
-    /// die Session gespeichert wird. Trifft die Watch-Antwort nicht rechtzeitig
-    /// ein, wird der Durchschnitt aus den bereits empfangenen Live-Werten genutzt.
+    /// wartet auf deren Abschlusswerte (u.a. die HealthKit-UUID ihrer eigenen
+    /// Workout-Session), bevor die Session gespeichert wird. Ohne ausreichend
+    /// Wartezeit würde `finish()` sonst selbst ein zweites HKWorkout anlegen,
+    /// weil `builder.finishWorkout()` auf der Watch plus der WatchConnectivity-
+    /// Rückweg zuverlässig länger als eine kurze feste Wartezeit dauern kann -
+    /// das führte zu doppelten Einträgen in Apple Health/Fitness für dieselbe
+    /// Einheit (einer davon ohne Kalorien, weil er vor Eintreffen der
+    /// vollständigen Watch-Werte gespeichert wurde). Pollt daher in kurzen
+    /// Abständen bis zu einer großzügigeren Obergrenze, statt einmalig kurz zu
+    /// warten, und bricht sofort ab, sobald die Watch-Antwort eingetroffen ist.
     @MainActor
     private func finishAsync() async {
         isFinishing = true
         connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId))
-        if remoteAvgHeartRate == nil {
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
+        let maxWaitNanoseconds: UInt64 = 6_000_000_000
+        let pollIntervalNanoseconds: UInt64 = 300_000_000
+        var waited: UInt64 = 0
+        while remoteHealthKitUUID == nil, remoteAvgHeartRate == nil, waited < maxWaitNanoseconds {
+            try? await Task.sleep(nanoseconds: pollIntervalNanoseconds)
+            waited += pollIntervalNanoseconds
         }
         await finish()
     }
@@ -418,6 +429,7 @@ struct ActiveWorkoutView: View {
         // sofort geschrieben wurde.
         try? modelContext.save()
         completedSession = session
+        Task { await StravaManager.shared.autoUploadIfNeeded(session: session) }
     }
 
     /// Schreibt das zuletzt abgehakte Arbeitsgewicht/-wiederholungen jeder

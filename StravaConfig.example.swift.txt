@@ -1,0 +1,18 @@
+import Foundation
+
+/// Vorlage für FitTrack/Services/StravaConfig.swift (siehe .gitignore - die
+/// echte Datei mit den eigenen Zugangsdaten wird bewusst nicht eingecheckt,
+/// damit das Client Secret nicht im Git-Verlauf landet).
+///
+/// So kommst du an eigene Werte:
+/// 1. https://www.strava.com/settings/api öffnen, eine App registrieren.
+/// 2. Als "Authorization Callback Domain" "readylift" eintragen - der
+///    Domain-Teil (nicht das Schema) der redirectURL unten muss exakt
+///    hiermit übereinstimmen, sonst lehnt Strava mit "redirect_uri invalid" ab.
+/// 3. Client ID und Client Secret von dort hier unten eintragen.
+/// 4. Diesen Inhalt nach FitTrack/Services/StravaConfig.swift kopieren.
+enum StravaConfig {
+    static let clientId = "DEINE_CLIENT_ID"
+    static let clientSecret = "DEIN_CLIENT_SECRET"
+    static let redirectURL = URL(string: "readylift://readylift")!
+}

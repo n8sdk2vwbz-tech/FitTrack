@@ -19,10 +19,12 @@
 		4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AC20A80C5B115A61B5486A /* ImportPlanView.swift */; };
 		42C72242A3B32535E2099818 /* StartWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */; };
 		44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */; };
+		4E6229116D7CD4124AA95CC8 /* StravaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51C498786D866BFB4746637 /* StravaSettingsView.swift */; };
 		4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */; };
 		50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BC6733088F129EF3878DAB /* DashboardViewModel.swift */; };
 		510F5B27547A326017C692E5 /* ExerciseMultiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */; };
 		52AB611343B24A086BA267E5 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E018B0F76B185194F92BAF45 /* WorkoutManager.swift */; };
+		54CA25600D8C4E3DDED69B42 /* StravaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CD9E760E77CB1799A425D2 /* StravaConfig.swift */; };
 		581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */; };
 		5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */; };
 		6F3A77E070D07D528EB1C5C5 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55458F2FF281E4BF301C4BB3 /* SummaryView.swift */; };
@@ -31,10 +33,12 @@
 		7AEE400C5239E9443436E34E /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = 143C1BBE66AC584AED8FBD90 /* FitTrackShared */; };
 		81A56FB40516EC9B06C8CD5D /* PlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76CC9A869F17DB44A8029AB7 /* PlanDetailView.swift */; };
 		8F656A22F3C0CDD8A6840CA1 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */; };
+		91868C5F6FA013F36D7A30A3 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */; };
 		95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0EB6D74DC3DB7E80C889336A /* Assets.xcassets */; };
 		9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */; };
 		A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181778660D0A233239C1AEE8 /* DashboardView.swift */; };
 		B29253509B94554E8B7FBE24 /* SharePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */; };
+		BA242192BDFBB013A5C10CE1 /* StravaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5302754DE0308CEBF15F484A /* StravaManager.swift */; };
 		BAF2E6C04A28239FA47C916B /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = A226CB3FDA21209397ACF82D /* FitTrackShared */; };
 		C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */; };
 		C3E8DAC7ADCA94692F8F1FFB /* FitTrackWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B8111A1D48406ECDA1841684 /* FitTrackWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -85,11 +89,14 @@
 		1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		1CBBCECF0CA54BDD0785ECDE /* FitTrackDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackDebug.entitlements; sourceTree = "<group>"; };
 		253C621FEB179B544870220D /* GeneratePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratePlanView.swift; sourceTree = "<group>"; };
+		309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		32CD9E760E77CB1799A425D2 /* StravaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaConfig.swift; sourceTree = "<group>"; };
 		3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlansView.swift; sourceTree = "<group>"; };
 		3899B6473B8E615422764613 /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
 		3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleHeatmapView.swift; sourceTree = "<group>"; };
 		45AC20A80C5B115A61B5486A /* ImportPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPlanView.swift; sourceTree = "<group>"; };
+		5302754DE0308CEBF15F484A /* StravaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaManager.swift; sourceTree = "<group>"; };
 		55458F2FF281E4BF301C4BB3 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrack.entitlements; sourceTree = "<group>"; };
 		5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
@@ -104,6 +111,7 @@
 		9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightAdjuster.swift; sourceTree = "<group>"; };
 		A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackApp.swift; sourceTree = "<group>"; };
 		B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
+		B51C498786D866BFB4746637 /* StravaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaSettingsView.swift; sourceTree = "<group>"; };
 		B8111A1D48406ECDA1841684 /* FitTrackWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitTrackWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkoutView.swift; sourceTree = "<group>"; };
 		C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainers.swift; sourceTree = "<group>"; };
@@ -210,6 +218,7 @@
 				9D81E82699DFD43A5DA32348 /* Dashboard */,
 				33A3C124F825DDF7AB0150DB /* Exercises */,
 				A6D4113687E5066425FC0DAF /* Plans */,
+				D3A7838556648F3407FC49C0 /* Settings */,
 				7B4F14485281D51F438F2296 /* Workouts */,
 			);
 			path = Views;
@@ -245,6 +254,7 @@
 				9B6942028129A3B4EE98E28C /* App */,
 				F797FA91D40F8592BAA6597C /* Models */,
 				5E7E11DFF5CF4F92D2E0B107 /* Resources */,
+				E2A569C5CF320244A94D2D4B /* Services */,
 				9AE3D13751DE40A717203B67 /* Views */,
 			);
 			path = FitTrack;
@@ -292,6 +302,24 @@
 				08F2E63D3FAFD0F059A271B1 /* Shared */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		D3A7838556648F3407FC49C0 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				B51C498786D866BFB4746637 /* StravaSettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		E2A569C5CF320244A94D2D4B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */,
+				32CD9E760E77CB1799A425D2 /* StravaConfig.swift */,
+				5302754DE0308CEBF15F484A /* StravaManager.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		E7C2758B62E8570F5F52DC9A /* App */ = {
@@ -436,6 +464,7 @@
 				9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */,
 				4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */,
 				1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */,
+				91868C5F6FA013F36D7A30A3 /* KeychainHelper.swift in Sources */,
 				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
 				5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */,
 				049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */,
@@ -443,6 +472,9 @@
 				44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */,
 				D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */,
 				B29253509B94554E8B7FBE24 /* SharePlanView.swift in Sources */,
+				54CA25600D8C4E3DDED69B42 /* StravaConfig.swift in Sources */,
+				BA242192BDFBB013A5C10CE1 /* StravaManager.swift in Sources */,
+				4E6229116D7CD4124AA95CC8 /* StravaSettingsView.swift in Sources */,
 				7302788ABF8BE9BBE5DC450A /* TrainingPlansView.swift in Sources */,
 				581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */,
 				C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */,

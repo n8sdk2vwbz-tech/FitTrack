@@ -49,6 +49,22 @@ final class DashboardViewModel: ObservableObject {
         } ?? 0
         let daysSinceRecentSession = mostRecentDate.map { max(0, Date.now.timeIntervalSince($0) / 86400) }
 
+        // Persönlicher Vergleichswert für `recentSessionLoad` (Median früherer
+        // Einheiten, ohne den/die gerade betrachteten Tag) statt eines für
+        // alle gleichen absoluten Richtwerts - sonst würde jemand, der
+        // grundsätzlich mit geringerem Gewicht trainiert, bei einer für diese
+        // Person tatsächlich harten Einheit trotzdem dauerhaft einen "alles
+        // im grünen Bereich"-Wert sehen, nur weil die kg-Zahlen klein sind.
+        // Median statt Mittelwert, damit ein einzelner sehr leichter/harter
+        // Ausreißertag den Vergleichswert nicht verzerrt. Erst ab 5 früheren
+        // Einheiten, davor ist kein verlässlicher eigener Durchschnitt bekannt.
+        let priorSessionLoads: [Double] = mostRecentDate.map { recentDate in
+            sessionLoadsWithDates.filter { !calendar.isDate($0.date, inSameDayAs: recentDate) }.map(\.load)
+        } ?? []
+        let personalTypicalSessionLoad: Double? = priorSessionLoads.count >= 5
+            ? median(Array(priorSessionLoads.suffix(30)))
+            : nil
+
         // Wahrgenommene Anstrengung (RPE/Trainings-Herzfrequenz) der letzten
         // ca. 2 Tage, neuere Einheiten stärker gewichtet - reagiert anders als
         // die beiden Werte oben sofort, auch ganz ohne Trainingshistorie.
@@ -88,10 +104,20 @@ final class DashboardViewModel: ObservableObject {
             sessionCount: sessionCount,
             recentSessionLoad: recentSessionLoad,
             daysSinceRecentSession: daysSinceRecentSession,
+            personalTypicalSessionLoad: personalTypicalSessionLoad,
             recentIntensity: recentIntensity
         )
 
         muscleStatuses = statuses
         readiness = RecoveryEngine.evaluate(inputs: inputs)
+    }
+
+    private func median(_ values: [Double]) -> Double {
+        let sorted = values.sorted()
+        let mid = sorted.count / 2
+        if sorted.count % 2 == 0 {
+            return (sorted[mid - 1] + sorted[mid]) / 2
+        }
+        return sorted[mid]
     }
 }

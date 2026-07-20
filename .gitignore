@@ -4,3 +4,6 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 .swiftpm/
+
+# Enthält das Strava Client Secret - siehe StravaConfig.example.swift
+FitTrack/Services/StravaConfig.swift

@@ -1,51 +1,15 @@
 import SwiftUI
-import UIKit
-import Combine
 
-/// Beobachtet, ob gerade die Bildschirmtastatur eingeblendet ist. Wird genutzt,
-/// um einen "Fertig"-Button in der normalen Navigationsleiste einzublenden -
-/// `ToolbarItemGroup(placement: .keyboard)` (die eigentlich dafür vorgesehene
-/// Tastatur-Zubehörleiste) hat sich in dieser App innerhalb von
-/// `.fullScreenCover`/verschachtelten Listen als unzuverlässig erwiesen und
-/// wurde teils gar nicht angezeigt - ein normaler Toolbar-Button rendert
-/// dagegen immer zuverlässig.
-@MainActor
-private final class KeyboardVisibilityObserver: ObservableObject {
-    @Published var isVisible = false
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
-            .sink { [weak self] _ in self?.isVisible = true }
-            .store(in: &cancellables)
-        NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
-            .sink { [weak self] _ in self?.isVisible = false }
-            .store(in: &cancellables)
-    }
-}
-
+/// Schließt die Tastatur beim Wegwischen zuverlässig. Ein eigener,
+/// tastaturabhängig ein-/ausgeblendeter "Fertig"-Button wurde zweimal
+/// versucht (Navigationsleiste, Tastatur-Zubehörleiste) und zeigte beide Male
+/// dasselbe Symptom: während der Ein-/Ausblend-Animation blieb innerhalb von
+/// `.fullScreenCover`/verschachtelten Listen gelegentlich ein zusätzliches,
+/// nicht mehr reagierendes Duplikat sichtbar. Bewusst ohne bedingte
+/// Toolbar-Elemente, um diese Fehlerklasse komplett zu vermeiden.
 private struct KeyboardDoneButtonModifier: ViewModifier {
-    @StateObject private var keyboard = KeyboardVisibilityObserver()
-
     func body(content: Content) -> some View {
-        content
-            .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                // Bewusst IMMER genau ein ToolbarItem deklariert (nur Sichtbarkeit
-                // per Opacity/allowsHitTesting umgeschaltet) statt es bedingt
-                // hinzuzufügen/zu entfernen - Letzteres hat in dieser App
-                // innerhalb von .fullScreenCover/verschachtelten Listen dazu
-                // geführt, dass während der Ein-/Ausblend-Animation kurzzeitig
-                // ein zusätzliches, nicht mehr reagierendes Duplikat sichtbar war.
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fertig") {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
-                    .fontWeight(.semibold)
-                    .opacity(keyboard.isVisible ? 1 : 0)
-                    .allowsHitTesting(keyboard.isVisible)
-                }
-            }
+        content.scrollDismissesKeyboard(.interactively)
     }
 }
 
