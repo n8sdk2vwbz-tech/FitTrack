@@ -106,9 +106,14 @@ public struct RemoteWorkoutStartDTO: Codable, Hashable {
 
 public struct RemoteWorkoutStopDTO: Codable, Hashable {
     public let sessionId: String
+    /// true, wenn das Training abgebrochen (nicht regulär beendet) wurde -
+    /// die Watch soll dann ihre HKWorkoutSession verwerfen (`discardWorkout`)
+    /// statt sie als echtes HealthKit-Workout zu speichern.
+    public let discard: Bool
 
-    public init(sessionId: String) {
+    public init(sessionId: String, discard: Bool = false) {
         self.sessionId = sessionId
+        self.discard = discard
     }
 }
 

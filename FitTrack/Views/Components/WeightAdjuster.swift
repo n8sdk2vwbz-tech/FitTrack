@@ -35,7 +35,7 @@ struct WeightAdjuster: View {
     var range: ClosedRange<Double> = 0...300
 
     @State private var text: String = ""
-    @FocusState private var isFocused: Bool
+    @State private var isEditing = false
 
     var body: some View {
         HStack(spacing: 4) {
@@ -47,23 +47,18 @@ struct WeightAdjuster: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
 
-            TextField("kg", text: $text)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.center)
-                .frame(width: 58)
-                .textFieldStyle(.roundedBorder)
-                .focused($isFocused)
-                .onAppear { text = formatted(weightKg) }
-                .onChange(of: weightKg) { _, newValue in
-                    // Externe Änderung (+/- Button, Plan-Vorbefüllung) -
-                    // während der Nutzer selbst tippt nicht überschreiben.
-                    guard !isFocused else { return }
-                    text = formatted(newValue)
-                }
-                .onChange(of: isFocused) { _, focused in
-                    guard !focused else { return }
-                    commit()
-                }
+            NoAccessoryTextField(text: $text, keyboardType: .decimalPad) { editing in
+                isEditing = editing
+                if !editing { commit() }
+            }
+            .frame(width: 58, height: 28)
+            .onAppear { text = formatted(weightKg) }
+            .onChange(of: weightKg) { _, newValue in
+                // Externe Änderung (+/- Button, Plan-Vorbefüllung) -
+                // während der Nutzer selbst tippt nicht überschreiben.
+                guard !isEditing else { return }
+                text = formatted(newValue)
+            }
 
             Text("kg")
                 .font(.caption2)

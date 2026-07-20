@@ -57,9 +57,9 @@ struct FitTrackWatchApp: App {
                 path.append(WatchRoute.remoteMonitoring)
             }
             .onChange(of: connectivity.remoteStopRequest) { _, request in
-                guard request != nil else { return }
+                guard let request else { return }
                 guard workoutManager.isRemoteControlled else { return }
-                workoutManager.end()
+                workoutManager.end(discard: request.discard)
             }
         }
     }

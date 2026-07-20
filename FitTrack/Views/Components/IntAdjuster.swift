@@ -12,7 +12,7 @@ struct IntAdjuster: View {
     var range: ClosedRange<Int> = 1...50
 
     @State private var text: String = ""
-    @FocusState private var isFocused: Bool
+    @State private var isEditing = false
 
     var body: some View {
         HStack(spacing: 4) {
@@ -24,21 +24,16 @@ struct IntAdjuster: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
 
-            TextField("", text: $text)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-                .frame(width: 34)
-                .textFieldStyle(.roundedBorder)
-                .focused($isFocused)
-                .onAppear { text = String(value) }
-                .onChange(of: value) { _, newValue in
-                    guard !isFocused else { return }
-                    text = String(newValue)
-                }
-                .onChange(of: isFocused) { _, focused in
-                    guard !focused else { return }
-                    commit()
-                }
+            NoAccessoryTextField(text: $text, keyboardType: .numberPad) { editing in
+                isEditing = editing
+                if !editing { commit() }
+            }
+            .frame(width: 34, height: 28)
+            .onAppear { text = String(value) }
+            .onChange(of: value) { _, newValue in
+                guard !isEditing else { return }
+                text = String(newValue)
+            }
 
             Button {
                 value = clamp(value + step)

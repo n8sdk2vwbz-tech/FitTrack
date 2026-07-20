@@ -195,7 +195,13 @@ final class WorkoutManager: NSObject, ObservableObject {
     func pause() { session?.pause() }
     func resume() { session?.resume() }
 
-    func end() {
+    /// - Parameter discard: true bei einem Abbruch (statt regulärem Beenden) -
+    ///   verwirft die HKWorkoutSession dann per `discardWorkout()`, statt sie
+    ///   als echtes HealthKit-Workout zu speichern. Ohne diese Unterscheidung
+    ///   landete auch bei einem sofort abgebrochenen Training ein (sehr
+    ///   kurzes) Workout in Health, das dann automatisch als eigene Einheit
+    ///   importiert wurde, obwohl real gar nicht trainiert wurde.
+    func end(discard: Bool = false) {
         pendingRemoteSessionTimeoutTask?.cancel()
         unreachableTimeoutTask?.cancel()
         averageHeartRateAtEnd = builder?.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
@@ -204,7 +210,13 @@ final class WorkoutManager: NSObject, ObservableObject {
         timer?.invalidate()
 
         guard let builder else {
-            finishAndSend(healthKitWorkout: nil, endDate: end)
+            finishAndSend(healthKitWorkout: nil, endDate: end, discarded: discard)
+            return
+        }
+
+        if discard {
+            builder.discardWorkout()
+            finishAndSend(healthKitWorkout: nil, endDate: end, discarded: true)
             return
         }
 
@@ -212,10 +224,26 @@ final class WorkoutManager: NSObject, ObservableObject {
             do {
                 try await builder.endCollection(at: end)
                 let workout = try await builder.finishWorkout()
-                finishAndSend(healthKitWorkout: workout, endDate: end)
+                // Die zuvor live mitgeschriebenen Werte (`activeEnergyKcal`,
+                // `averageHeartRateAtEnd`) können knapp vor Trainingsende noch
+                // unvollständig sein, wenn HealthKit die letzten Samples erst
+                // nach diesem Zeitpunkt zustellt - das führte dazu, dass HF
+                // oder Kalorien in ReadyLift/Strava fehlten, obwohl Apple
+                // Fitness (das die fertige HKWorkout-Statistik erst NACH dem
+                // Abschluss anzeigt) den korrekten Wert hatte. Deshalb hier
+                // aus der fertigen, endgültigen HKWorkout-Statistik lesen.
+                if let workout {
+                    if let finalEnergy = workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie()) {
+                        activeEnergyKcal = finalEnergy
+                    }
+                    if let finalHeartRate = workout.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute())) {
+                        averageHeartRateAtEnd = finalHeartRate
+                    }
+                }
+                finishAndSend(healthKitWorkout: workout, endDate: end, discarded: false)
             } catch {
                 print("FitTrack: Fehler beim Beenden der Workout-Session: \(error)")
-                finishAndSend(healthKitWorkout: nil, endDate: end)
+                finishAndSend(healthKitWorkout: nil, endDate: end, discarded: false)
             }
         }
     }
@@ -232,12 +260,21 @@ final class WorkoutManager: NSObject, ObservableObject {
         }
     }
 
-    private func finishAndSend(healthKitWorkout: HKWorkout?, endDate: Date) {
+    private func finishAndSend(healthKitWorkout: HKWorkout?, endDate: Date, discarded: Bool) {
         guard let startDate else { return }
 
         if isRemoteControlled {
+            let finishedSessionId = remoteSessionId ?? ""
+            isRemoteControlled = false
+            remoteSessionId = nil
+            didFinish = true
+            // Bei einem Abbruch wurde nichts gespeichert - es gibt nichts
+            // Sinnvolles zu melden, und das iPhone hat seine Ansicht beim
+            // Abbrechen ohnehin schon sofort geschlossen, ohne auf eine
+            // Antwort zu warten.
+            guard !discarded else { return }
             let result = RemoteWorkoutResultDTO(
-                sessionId: remoteSessionId ?? "",
+                sessionId: finishedSessionId,
                 startDate: startDate,
                 endDate: endDate,
                 totalEnergyBurnedKcal: activeEnergyKcal > 0 ? activeEnergyKcal : nil,
@@ -245,8 +282,10 @@ final class WorkoutManager: NSObject, ObservableObject {
                 healthKitWorkoutUUID: healthKitWorkout?.uuid.uuidString
             )
             WatchConnectivityManager.shared.sendRemoteWorkoutResult(result)
-            isRemoteControlled = false
-            remoteSessionId = nil
+            return
+        }
+
+        guard !discarded else {
             didFinish = true
             return
         }

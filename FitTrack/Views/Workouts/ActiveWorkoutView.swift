@@ -347,7 +347,11 @@ struct ActiveWorkoutView: View {
     }
 
     private func cancel() {
-        connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId))
+        // discard: true - anders als beim regulären Beenden soll die Watch
+        // ihre HKWorkoutSession verwerfen statt sie zu speichern, sonst
+        // landet trotz Abbruch ein (sehr kurzes) Workout in Health und wird
+        // von dort automatisch wieder als eigene Einheit importiert.
+        connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId, discard: true))
         dismiss()
     }
 
@@ -365,7 +369,7 @@ struct ActiveWorkoutView: View {
     @MainActor
     private func finishAsync() async {
         isFinishing = true
-        connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId))
+        connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId, discard: false))
         let maxWaitNanoseconds: UInt64 = 6_000_000_000
         let pollIntervalNanoseconds: UInt64 = 300_000_000
         var waited: UInt64 = 0

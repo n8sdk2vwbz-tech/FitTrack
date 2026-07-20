@@ -13,6 +13,7 @@
 		17FBEFF306341CA43C6110A1 /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3899B6473B8E615422764613 /* WorkoutModels.swift */; };
 		1F9024259FBEAF011B328154 /* GeneratePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253C621FEB179B544870220D /* GeneratePlanView.swift */; };
 		29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */; };
+		2BC5E769566E58DE20AA8907 /* NoAccessoryTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A09C36FE6DC179AF04FE34EA /* NoAccessoryTextField.swift */; };
 		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
 		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
 		40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */; };
@@ -109,6 +110,7 @@
 		7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
 		91D5CCF148ADC85C24968752 /* ReadinessRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadinessRingView.swift; sourceTree = "<group>"; };
 		9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightAdjuster.swift; sourceTree = "<group>"; };
+		A09C36FE6DC179AF04FE34EA /* NoAccessoryTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoAccessoryTextField.swift; sourceTree = "<group>"; };
 		A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackApp.swift; sourceTree = "<group>"; };
 		B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutView.swift; sourceTree = "<group>"; };
 		B51C498786D866BFB4746637 /* StravaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaSettingsView.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 				629EC6F7CF970A556C46F397 /* EffortRatingView.swift */,
 				67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */,
 				1619974B38585E7316A89052 /* IntAdjuster.swift */,
+				A09C36FE6DC179AF04FE34EA /* NoAccessoryTextField.swift */,
 				9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */,
 			);
 			path = Components;
@@ -467,6 +470,7 @@
 				91868C5F6FA013F36D7A30A3 /* KeychainHelper.swift in Sources */,
 				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
 				5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */,
+				2BC5E769566E58DE20AA8907 /* NoAccessoryTextField.swift in Sources */,
 				049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */,
 				81A56FB40516EC9B06C8CD5D /* PlanDetailView.swift in Sources */,
 				44E6EA31856F072C48BE42F0 /* ReadinessRingView.swift in Sources */,

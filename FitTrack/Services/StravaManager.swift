@@ -31,10 +31,12 @@ private struct StravaTokenResponse: Codable {
 /// Kapselt die Strava-Anbindung: OAuth-Login per `ASWebAuthenticationSession`
 /// (kein eigenes Web-View, Strava-Login läuft im sicheren System-Kontext),
 /// Token-Verwaltung im Schlüsselbund und den Upload einzelner Trainings als
-/// manuelle (GPS-lose) Aktivität. Bewusst die "private Nutzung"-Variante mit
-/// eingebettetem Client Secret direkt in der App (siehe `StravaConfig`) -
-/// für eine öffentliche Veröffentlichung müsste der Token-Austausch
-/// stattdessen über einen eigenen Server laufen, der das Secret hält.
+/// TCX-Datei (statt des einfachen "Aktivität erstellen"-Endpunkts, der keine
+/// Herzfrequenz/Kalorien akzeptiert - siehe `uploadActivityFile`). Bewusst
+/// die "private Nutzung"-Variante mit eingebettetem Client Secret direkt in
+/// der App (siehe `StravaConfig`) - für eine öffentliche Veröffentlichung
+/// müsste der Token-Austausch stattdessen über einen eigenen Server laufen,
+/// der das Secret hält.
 @MainActor
 final class StravaManager: NSObject, ObservableObject {
     static let shared = StravaManager()
@@ -133,47 +135,106 @@ final class StravaManager: NSObject, ObservableObject {
     /// Manueller Upload (z.B. per Wisch-Geste im Verlauf) - wirft im
     /// Fehlerfall, damit der Aufrufer eine Rückmeldung anzeigen kann.
     func uploadActivity(for session: WorkoutSession) async throws {
-        let totalVolume = session.entries.reduce(0.0) { $0 + $1.totalVolume }
-        var descriptionParts: [String] = []
-        if totalVolume > 0 { descriptionParts.append("\(Int(totalVolume.rounded())) kg bewegt") }
-        if let rpe = session.perceivedExertion { descriptionParts.append("Anstrengung \(rpe)/10") }
-        let description = descriptionParts.isEmpty ? nil : descriptionParts.joined(separator: " · ")
-
-        try await uploadActivity(
+        try await uploadActivityFile(
             name: session.activityName,
             startDate: session.date,
             durationSeconds: session.durationSeconds,
-            description: description
+            averageHeartRate: session.averageHeartRate,
+            totalEnergyBurnedKcal: session.totalEnergyBurnedKcal,
+            description: nil
         )
     }
 
-    /// Lädt ein abgeschlossenes Training als manuelle (GPS-lose) Aktivität
-    /// hoch - der dafür vorgesehene Strava-Endpunkt für Einheiten ohne
-    /// eigenen Track (im Gegensatz zum Datei-Upload für Cardio mit GPS).
-    func uploadActivity(name: String, startDate: Date, durationSeconds: Double, description: String?) async throws {
+    /// Lädt ein abgeschlossenes Training als TCX-Datei hoch (statt über den
+    /// einfachen "Aktivität erstellen"-Endpunkt): Der nimmt nur Name/Dauer/
+    /// Beschreibung entgegen, aber KEINE Herzfrequenz oder Kalorien als
+    /// Eingabe - die tauchen bei Strava nur auf, wenn eine echte Sensordaten-
+    /// Datei (GPX/TCX/FIT) hochgeladen wird, so wie es auch Apples Fitness-App
+    /// tut. Da FitTrack aktuell nur die durchschnittliche Herzfrequenz (nicht
+    /// den vollen Zeitverlauf) speichert, wird bewusst eine flache, aber
+    /// ehrliche Linie aus Trackpoints mit demselben Wert erzeugt statt ein
+    /// erfundener Verlauf - Strava zeigt daraus trotzdem eine korrekte
+    /// Durchschnitts-/Maximalherzfrequenz an.
+    func uploadActivityFile(name: String, startDate: Date, durationSeconds: Double, averageHeartRate: Double?, totalEnergyBurnedKcal: Double?, description: String?) async throws {
         try await refreshAccessTokenIfNeeded()
         guard let accessToken else { throw StravaError.notConnected }
 
-        var request = URLRequest(url: URL(string: "https://www.strava.com/api/v3/activities")!)
+        let tcx = Self.tcxDocument(
+            startDate: startDate,
+            durationSeconds: durationSeconds,
+            averageHeartRate: averageHeartRate,
+            totalEnergyBurnedKcal: totalEnergyBurnedKcal
+        )
+        let boundary = "Boundary-\(UUID().uuidString)"
+
+        var request = URLRequest(url: URL(string: "https://www.strava.com/api/v3/uploads")!)
         request.httpMethod = "POST"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
-        var body: [String: Any] = [
-            "name": name,
-            "type": "WeightTraining",
-            "sport_type": "WeightTraining",
-            "start_date_local": ISO8601DateFormatter().string(from: startDate),
-            "elapsed_time": max(1, Int(durationSeconds))
-        ]
-        if let description { body["description"] = description }
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        var body = Data()
+        func appendField(_ name: String, _ value: String) {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
+        appendField("data_type", "tcx")
+        appendField("name", name)
+        if let description { appendField("description", description) }
+        appendField("activity_type", "weighttraining")
+        appendField("external_id", "readylift-\(startDate.timeIntervalSince1970)")
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"workout.tcx\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: application/xml\r\n\r\n".data(using: .utf8)!)
+        body.append(tcx.data(using: .utf8)!)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
 
         let (_, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             let status = (response as? HTTPURLResponse)?.statusCode ?? -1
             throw StravaError.uploadFailed(status)
         }
+    }
+
+    private static func tcxDocument(startDate: Date, durationSeconds: Double, averageHeartRate: Double?, totalEnergyBurnedKcal: Double?) -> String {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
+
+        let duration = max(1, Int(durationSeconds))
+        let pointIntervalSeconds = 60
+        var trackpoints = ""
+        var elapsed = 0
+        while elapsed <= duration {
+            let pointDate = startDate.addingTimeInterval(TimeInterval(elapsed))
+            let heartRateElement = averageHeartRate.map { "<HeartRateBpm><Value>\(Int($0.rounded()))</Value></HeartRateBpm>" } ?? ""
+            trackpoints += "<Trackpoint><Time>\(isoFormatter.string(from: pointDate))</Time>\(heartRateElement)</Trackpoint>"
+            elapsed += pointIntervalSeconds
+        }
+
+        let caloriesValue = Int((totalEnergyBurnedKcal ?? 0).rounded())
+        let startString = isoFormatter.string(from: startDate)
+
+        return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">
+        <Activities>
+        <Activity Sport="Other">
+        <Id>\(startString)</Id>
+        <Lap StartTime="\(startString)">
+        <TotalTimeSeconds>\(duration)</TotalTimeSeconds>
+        <DistanceMeters>0</DistanceMeters>
+        <Calories>\(caloriesValue)</Calories>
+        <Intensity>Active</Intensity>
+        <TriggerMethod>Manual</TriggerMethod>
+        <Track>\(trackpoints)</Track>
+        </Lap>
+        </Activity>
+        </Activities>
+        </TrainingCenterDatabase>
+        """
     }
 
     private func exchangeCodeForTokens(code: String) async throws {
