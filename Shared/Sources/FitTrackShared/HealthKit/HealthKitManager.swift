@@ -14,6 +14,11 @@ public struct WorkoutSummary {
     public let sourceName: String?
 }
 
+public struct HeartRateSample {
+    public let date: Date
+    public let bpm: Double
+}
+
 /// Kapselt allen HealthKit-Zugriff (Lesen von Schlaf/HRV/Ruhepuls, Schreiben
 /// von Workouts). Läuft identisch auf iPhone und Watch, da beide Plattformen
 /// HealthKit unterstützen und über den iCloud-Health-Sync dieselben Daten sehen.
@@ -299,6 +304,35 @@ public final class HealthKitManager {
             distanceMeters: distance,
             sourceName: workout.sourceRevision.source.name
         )
+    }
+
+    /// Findet ein zuvor gespeichertes Workout anhand seiner UUID wieder (z.B.
+    /// um im Nachhinein - nachdem HealthKit alle Werte final verarbeitet hat -
+    /// auf dessen Statistiken/Samples zuzugreifen).
+    public func fetchWorkout(uuid: UUID) async -> HKWorkout? {
+        let predicate = HKQuery.predicateForObject(with: uuid)
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: workoutType, predicate: predicate, limit: 1, sortDescriptors: nil) { _, results, _ in
+                continuation.resume(returning: (results as? [HKWorkout])?.first)
+            }
+            healthStore.execute(query)
+        }
+    }
+
+    /// Liefert die vollständige Herzfrequenz-Zeitreihe eines Workouts statt nur
+    /// des Durchschnitts - z.B. für einen echten HF-Verlauf beim Strava-Export
+    /// (wie ihn Apple Fitness selbst anzeigt) statt einer flachen Linie.
+    public func fetchHeartRateSamples(for workout: HKWorkout) async -> [HeartRateSample] {
+        let predicate = HKQuery.predicateForObjects(from: workout)
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let samples: [HKQuantitySample] = await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: heartRateType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, results, _ in
+                continuation.resume(returning: (results as? [HKQuantitySample]) ?? [])
+            }
+            healthStore.execute(query)
+        }
+        let unit = HKUnit.count().unitDivided(by: .minute())
+        return samples.map { HeartRateSample(date: $0.startDate, bpm: $0.quantity.doubleValue(for: unit)) }
     }
 
     private func preferredDistanceType(for activityType: HKWorkoutActivityType) -> HKQuantityType {

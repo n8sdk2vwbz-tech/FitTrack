@@ -1,6 +1,7 @@
 import Foundation
 import AuthenticationServices
 import UIKit
+import FitTrackShared
 
 enum StravaError: LocalizedError {
     case missingCode
@@ -135,11 +136,23 @@ final class StravaManager: NSObject, ObservableObject {
     /// Manueller Upload (z.B. per Wisch-Geste im Verlauf) - wirft im
     /// Fehlerfall, damit der Aufrufer eine Rückmeldung anzeigen kann.
     func uploadActivity(for session: WorkoutSession) async throws {
+        // Die echte HF-Zeitreihe (statt nur des gespeicherten Durchschnitts)
+        // kommt direkt aus HealthKit, sofern das zugehörige HKWorkout noch
+        // auffindbar ist - dieselbe Quelle, aus der auch Apple Fitness seinen
+        // Verlauf zeichnet. Ohne UUID (z.B. sehr alte Sessions) bleibt der
+        // Rückfall auf eine flache Linie aus dem Durchschnittswert.
+        var heartRateSamples: [HeartRateSample] = []
+        if let uuidString = session.healthKitWorkoutUUID, let uuid = UUID(uuidString: uuidString),
+           let workout = await HealthKitManager.shared.fetchWorkout(uuid: uuid) {
+            heartRateSamples = await HealthKitManager.shared.fetchHeartRateSamples(for: workout)
+        }
+
         try await uploadActivityFile(
             name: session.activityName,
             startDate: session.date,
             durationSeconds: session.durationSeconds,
             averageHeartRate: session.averageHeartRate,
+            heartRateSamples: heartRateSamples,
             totalEnergyBurnedKcal: session.totalEnergyBurnedKcal,
             description: nil
         )
@@ -150,12 +163,8 @@ final class StravaManager: NSObject, ObservableObject {
     /// Beschreibung entgegen, aber KEINE Herzfrequenz oder Kalorien als
     /// Eingabe - die tauchen bei Strava nur auf, wenn eine echte Sensordaten-
     /// Datei (GPX/TCX/FIT) hochgeladen wird, so wie es auch Apples Fitness-App
-    /// tut. Da FitTrack aktuell nur die durchschnittliche Herzfrequenz (nicht
-    /// den vollen Zeitverlauf) speichert, wird bewusst eine flache, aber
-    /// ehrliche Linie aus Trackpoints mit demselben Wert erzeugt statt ein
-    /// erfundener Verlauf - Strava zeigt daraus trotzdem eine korrekte
-    /// Durchschnitts-/Maximalherzfrequenz an.
-    func uploadActivityFile(name: String, startDate: Date, durationSeconds: Double, averageHeartRate: Double?, totalEnergyBurnedKcal: Double?, description: String?) async throws {
+    /// tut.
+    func uploadActivityFile(name: String, startDate: Date, durationSeconds: Double, averageHeartRate: Double?, heartRateSamples: [HeartRateSample] = [], totalEnergyBurnedKcal: Double?, description: String?) async throws {
         try await refreshAccessTokenIfNeeded()
         guard let accessToken else { throw StravaError.notConnected }
 
@@ -163,6 +172,7 @@ final class StravaManager: NSObject, ObservableObject {
             startDate: startDate,
             durationSeconds: durationSeconds,
             averageHeartRate: averageHeartRate,
+            heartRateSamples: heartRateSamples,
             totalEnergyBurnedKcal: totalEnergyBurnedKcal
         )
         let boundary = "Boundary-\(UUID().uuidString)"
@@ -199,19 +209,33 @@ final class StravaManager: NSObject, ObservableObject {
         }
     }
 
-    private static func tcxDocument(startDate: Date, durationSeconds: Double, averageHeartRate: Double?, totalEnergyBurnedKcal: Double?) -> String {
+    private static func tcxDocument(startDate: Date, durationSeconds: Double, averageHeartRate: Double?, heartRateSamples: [HeartRateSample], totalEnergyBurnedKcal: Double?) -> String {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime]
 
         let duration = max(1, Int(durationSeconds))
-        let pointIntervalSeconds = 60
         var trackpoints = ""
-        var elapsed = 0
-        while elapsed <= duration {
-            let pointDate = startDate.addingTimeInterval(TimeInterval(elapsed))
-            let heartRateElement = averageHeartRate.map { "<HeartRateBpm><Value>\(Int($0.rounded()))</Value></HeartRateBpm>" } ?? ""
-            trackpoints += "<Trackpoint><Time>\(isoFormatter.string(from: pointDate))</Time>\(heartRateElement)</Trackpoint>"
-            elapsed += pointIntervalSeconds
+
+        if !heartRateSamples.isEmpty {
+            // Echte, zeitlich verortete Messwerte aus HealthKit - ergibt in
+            // Strava einen tatsächlichen Auf-und-Ab-Verlauf statt eines
+            // flachen Balkens auf Höhe des Durchschnitts.
+            for sample in heartRateSamples {
+                let heartRateElement = "<HeartRateBpm><Value>\(Int(sample.bpm.rounded()))</Value></HeartRateBpm>"
+                trackpoints += "<Trackpoint><Time>\(isoFormatter.string(from: sample.date))</Time>\(heartRateElement)</Trackpoint>"
+            }
+        } else {
+            // Rückfall ohne Zeitreihe (z.B. keine HealthKit-Verknüpfung mehr
+            // auffindbar): eine flache, aber ehrliche Linie aus dem
+            // gespeicherten Durchschnittswert statt eines erfundenen Verlaufs.
+            let pointIntervalSeconds = 60
+            var elapsed = 0
+            while elapsed <= duration {
+                let pointDate = startDate.addingTimeInterval(TimeInterval(elapsed))
+                let heartRateElement = averageHeartRate.map { "<HeartRateBpm><Value>\(Int($0.rounded()))</Value></HeartRateBpm>" } ?? ""
+                trackpoints += "<Trackpoint><Time>\(isoFormatter.string(from: pointDate))</Time>\(heartRateElement)</Trackpoint>"
+                elapsed += pointIntervalSeconds
+            }
         }
 
         let caloriesValue = Int((totalEnergyBurnedKcal ?? 0).rounded())

@@ -82,6 +82,13 @@ public final class WatchConnectivityManager: NSObject, ObservableObject {
     /// Watch -> iPhone: Abschlussdaten (Kalorien, Ø-Herzfrequenz, HealthKit-UUID) nach dem Beenden.
     public func sendRemoteWorkoutResult(_ dto: RemoteWorkoutResultDTO) {
         send(type: .remoteResult, payload: dto)
+        // Genau wie beim Stop-Befehl zusätzlich garantiert zustellen: ist das
+        // iPhone im Moment des Beendens gerade kurz nicht erreichbar (z.B.
+        // Bildschirm der Watch war kurz zuvor dunkel), ginge das Ergebnis
+        // sonst komplett verloren statt nur verspätet anzukommen - die
+        // Watch berechnet diese Werte nur einmal, es gibt keinen erneuten Versuch.
+        guard WCSession.isSupported(), let data = try? JSONEncoder().encode(dto) else { return }
+        WCSession.default.transferUserInfo(["type": MessageType.remoteResult.rawValue, "payload": data])
     }
 
     private func send<T: Encodable>(type: MessageType, payload: T) {

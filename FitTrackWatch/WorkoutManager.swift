@@ -48,7 +48,17 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Wie lange das iPhone nicht erreichbar sein darf, bevor eine
     /// ferngesteuerte Session selbst beendet wird (siehe `handleReachabilityChange`).
-    private let unreachableTimeoutSeconds: UInt64 = 30
+    /// `isReachable` wird schon durch einen dunklen Watch-Bildschirm oder eine
+    /// kurze Bluetooth-Lücke kurzzeitig false - beides während eines normalen
+    /// Trainings völlig normal und meist nach wenigen Sekunden wieder vorbei.
+    /// War dieser Wert bei 30s, beendete (und speicherte!) dieses
+    /// Sicherheitsnetz regelmäßig noch laufende Trainings von selbst, obwohl
+    /// gar nichts wirklich schiefgelaufen war - und ein zwischenzeitlich vom
+    /// iPhone gesendeter, korrekter Abbrechen-Befehl (der garantiert, aber
+    /// eventuell leicht verspätet zugestellt wird) kam dann zu spät, weil die
+    /// Session zu diesem Zeitpunkt bereits (fälschlich nicht verworfen)
+    /// beendet war. 5 Minuten geben der garantierten Zustellung genug Zeit.
+    private let unreachableTimeoutSeconds: UInt64 = 300
     /// Absolute Obergrenze für eine ferngesteuerte Session, unabhängig von der
     /// Erreichbarkeit - deckt den Fall ab, dass das iPhone zwar verbunden
     /// bleibt (z.B. App im Hintergrund weiterhin aktiv), aber nie explizit
