@@ -14,7 +14,7 @@ struct ExerciseLibraryView: View {
         return Set(
             sessions
                 .filter { $0.date >= cutoff }
-                .flatMap { $0.entries.map(\.exerciseId) }
+                .flatMap { $0.entryList.map(\.exerciseId) }
         )
     }
 

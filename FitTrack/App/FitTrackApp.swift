@@ -24,12 +24,17 @@ struct FitTrackApp: App {
     }
 
     /// Trainings-Verlauf (und, aus Kompatibilitätsgründen, weiterhin auch die
-    /// Plan-Modelltypen im Schema - siehe `migratePlansIfNeeded`) bleibt exakt
-    /// im ursprünglichen, unbenannten lokalen Store wie von Anfang an. Schlägt
-    /// die automatische Migration eines bereits vorhandenen Stores fehl (z.B.
-    /// nach einer Änderung am Datenmodell), wird der alte Store verworfen und
-    /// ein frischer angelegt, statt die App beim Start mit einem schwarzen
-    /// Bildschirm abstürzen zu lassen.
+    /// Plan-Modelltypen im Schema - siehe `migratePlansIfNeeded`), im
+    /// ursprünglichen, unbenannten Store wie von Anfang an - jetzt aber über
+    /// iCloud (private Datenbank) synchronisiert, damit ein Neuinstallieren
+    /// der App nicht mehr Sätze/Gewichte und die daraus berechnete
+    /// Trainingslast unwiderruflich löscht. Fällt automatisch auf einen rein
+    /// lokalen Store zurück, falls iCloud gerade nicht verfügbar ist (kein
+    /// Account, Entitlement nicht provisioniert, ...), statt die App
+    /// abstürzen zu lassen. Wichtig: das CloudKit-Schema muss nach jeder
+    /// Modelländerung zusätzlich manuell in der CloudKit-Konsole von
+    /// Development nach Production übertragen werden - sonst syncen
+    /// TestFlight-/App-Store-Builds trotz korrekter Konfiguration nicht.
     private static func makeHistoryContainer() -> ModelContainer {
         let schema = Schema([
             WorkoutSession.self,
@@ -39,19 +44,24 @@ struct FitTrackApp: App {
             PlanDay.self,
             PlanItem.self
         ])
-        let configuration = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
 
-        if let container = try? ModelContainer(for: schema, configurations: [configuration]) {
+        let cloudConfiguration = ModelConfiguration(schema: schema, cloudKitDatabase: .automatic)
+        if let container = try? ModelContainer(for: schema, configurations: [cloudConfiguration]) {
             return container
         }
 
-        let url = configuration.url
+        let localConfiguration = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+        if let container = try? ModelContainer(for: schema, configurations: [localConfiguration]) {
+            return container
+        }
+
+        let url = localConfiguration.url
         let fileManager = FileManager.default
         for suffix in ["", "-wal", "-shm"] {
             try? fileManager.removeItem(at: URL(fileURLWithPath: url.path + suffix))
         }
 
-        guard let recreatedContainer = try? ModelContainer(for: schema, configurations: [configuration]) else {
+        guard let recreatedContainer = try? ModelContainer(for: schema, configurations: [localConfiguration]) else {
             fatalError("FitTrack: SwiftData-Container konnte auch nach dem Zurücksetzen des lokalen Speichers nicht erstellt werden.")
         }
         return recreatedContainer

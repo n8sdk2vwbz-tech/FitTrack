@@ -42,7 +42,7 @@ struct RateEffortView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var totalVolumeKg: Double {
-        session.entries.reduce(0.0) { $0 + $1.totalVolume }
+        session.entryList.reduce(0.0) { $0 + $1.totalVolume }
     }
 
     var body: some View {

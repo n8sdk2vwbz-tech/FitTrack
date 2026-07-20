@@ -14,11 +14,11 @@ enum WorkoutSource: String, Codable {
 
 @Model
 final class SetEntry {
-    var reps: Int
-    var weightKg: Double
+    var reps: Int = 0
+    var weightKg: Double = 0
     var rpe: Double?
-    var isWarmup: Bool
-    var order: Int
+    var isWarmup: Bool = false
+    var order: Int = 0
 
     init(reps: Int, weightKg: Double, rpe: Double? = nil, isWarmup: Bool = false, order: Int = 0) {
         self.reps = reps
@@ -44,10 +44,13 @@ final class SetEntry {
 
 @Model
 final class ExerciseEntry {
-    var exerciseId: String
-    var exerciseName: String
-    var order: Int
-    @Relationship(deleteRule: .cascade) var sets: [SetEntry]
+    var exerciseId: String = ""
+    var exerciseName: String = ""
+    var order: Int = 0
+    // Optional statt eines nie-nil Arrays, weil SwiftDatas CloudKit-Sync das
+    // für Beziehungen verlangt (siehe Kommentar über `PlanItem`) - der
+    // Trainings-Verlauf syncet jetzt genau wie die Pläne über iCloud.
+    @Relationship(deleteRule: .cascade) var sets: [SetEntry]?
 
     init(exerciseId: String, exerciseName: String, order: Int = 0, sets: [SetEntry] = []) {
         self.exerciseId = exerciseId
@@ -56,9 +59,14 @@ final class ExerciseEntry {
         self.sets = sets
     }
 
+    var setList: [SetEntry] {
+        get { sets ?? [] }
+        set { sets = newValue }
+    }
+
     /// Kompakte Zusammenfassung der Arbeitssätze, z.B. "10x20,0 kg, 8x22,5 kg".
     var summaryText: String {
-        let workingSets = sets.filter { !$0.isWarmup }.sorted { $0.order < $1.order }
+        let workingSets = setList.filter { !$0.isWarmup }.sorted { $0.order < $1.order }
         guard !workingSets.isEmpty else { return "–" }
         return workingSets
             .map { "\($0.reps)x\($0.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg" }
@@ -66,28 +74,28 @@ final class ExerciseEntry {
     }
 
     var topSetWeight: Double {
-        sets.filter { !$0.isWarmup }.map(\.weightKg).max() ?? 0
+        setList.filter { !$0.isWarmup }.map(\.weightKg).max() ?? 0
     }
 
     var totalVolume: Double {
         let exercise = ExerciseLibrary.byId[exerciseId]
-        return sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
+        return setList.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
     }
 }
 
 @Model
 final class WorkoutSession {
-    var id: String
-    var date: Date
-    var activityName: String
-    var durationSeconds: Double
+    var id: String = UUID().uuidString
+    var date: Date = Date.now
+    var activityName: String = ""
+    var durationSeconds: Double = 0
     var totalEnergyBurnedKcal: Double?
     var averageHeartRate: Double?
     var distanceMeters: Double?
     /// Name der App, die dieses Workout ursprünglich aufgezeichnet hat
     /// (z.B. "Workout" für die native Watch-App oder "Strava"), sofern importiert.
     var externalSourceName: String?
-    var sourceRaw: String
+    var sourceRaw: String = WorkoutSource.iphone.rawValue
     var healthKitWorkoutUUID: String?
     /// `HKWorkoutActivityType.rawValue` des importierten HealthKit-Workouts
     /// (z.B. Laufen, Radfahren) - erlaubt `muscleLoadEvents()`, auch für
@@ -98,7 +106,10 @@ final class WorkoutSession {
     /// ähnlich Apples "Anstrengung bewerten". Fließt zusammen mit der
     /// Herzfrequenz in die Trainingslast-Berechnung ein (siehe `intensityMultiplier`).
     var perceivedExertion: Int?
-    @Relationship(deleteRule: .cascade) var entries: [ExerciseEntry]
+    // Optional statt eines nie-nil Arrays, weil SwiftDatas CloudKit-Sync das
+    // für Beziehungen verlangt (siehe Kommentar über `PlanItem`) - der
+    // Trainings-Verlauf syncet jetzt genau wie die Pläne über iCloud.
+    @Relationship(deleteRule: .cascade) var entries: [ExerciseEntry]?
 
     var source: WorkoutSource {
         get { WorkoutSource(rawValue: sourceRaw) ?? .iphone }
@@ -133,6 +144,11 @@ final class WorkoutSession {
         self.healthKitActivityTypeRawValue = healthKitActivityTypeRawValue
         self.perceivedExertion = perceivedExertion
         self.entries = entries
+    }
+
+    var entryList: [ExerciseEntry] {
+        get { entries ?? [] }
+        set { entries = newValue }
     }
 
     /// Kombinierter Intensitätsfaktor aus gefühlter Anstrengung (RPE) und
@@ -198,9 +214,9 @@ final class WorkoutSession {
     func muscleLoadEvents(maxHeartRate: Double? = nil) -> [MuscleLoadEvent] {
         var events: [MuscleLoadEvent] = []
         let intensity = intensityMultiplier(maxHeartRate: maxHeartRate)
-        for entry in entries {
+        for entry in entryList {
             guard let exercise = ExerciseLibrary.byId[entry.exerciseId] else { continue }
-            let baseVolume = entry.sets.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
+            let baseVolume = entry.setList.filter { !$0.isWarmup }.reduce(0) { $0 + $1.volume(exercise: exercise) }
             guard baseVolume > 0 else { continue }
             let totalVolume = baseVolume * intensity
             for muscle in exercise.primaryMuscles {
@@ -211,7 +227,7 @@ final class WorkoutSession {
             }
         }
 
-        if entries.isEmpty,
+        if entryList.isEmpty,
            let rawActivityType = healthKitActivityTypeRawValue,
            let cardioExerciseId = HKWorkoutActivityType(rawValue: UInt(rawActivityType))?.cardioExerciseLibraryId,
            let exercise = ExerciseLibrary.byId[cardioExerciseId] {
@@ -234,7 +250,7 @@ final class WorkoutSession {
     static func mostRecentEntry(forExerciseId exerciseId: String, in sessions: [WorkoutSession]) -> ExerciseEntry? {
         sessions
             .sorted { $0.date > $1.date }
-            .compactMap { session in session.entries.first { $0.exerciseId == exerciseId } }
+            .compactMap { session in session.entryList.first { $0.exerciseId == exerciseId } }
             .first
     }
 
@@ -243,7 +259,7 @@ final class WorkoutSession {
         sessions
             .sorted { $0.date < $1.date }
             .compactMap { session -> (Date, Double, Double)? in
-                guard let entry = session.entries.first(where: { $0.exerciseId == exerciseId }) else { return nil }
+                guard let entry = session.entryList.first(where: { $0.exerciseId == exerciseId }) else { return nil }
                 guard entry.totalVolume > 0 else { return nil }
                 return (session.date, entry.topSetWeight, entry.totalVolume)
             }

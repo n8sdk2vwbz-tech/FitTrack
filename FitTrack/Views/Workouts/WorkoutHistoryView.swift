@@ -20,7 +20,7 @@ struct WorkoutHistoryView: View {
         return grouped
             .map { weekStart, sessionsInWeek in
                 let volume = sessionsInWeek.reduce(0.0) { total, session in
-                    total + session.entries.reduce(0.0) { $0 + $1.totalVolume }
+                    total + session.entryList.reduce(0.0) { $0 + $1.totalVolume }
                 }
                 return (weekStart: weekStart, volume: volume)
             }

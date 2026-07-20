@@ -35,9 +35,9 @@ struct WorkoutDetailView: View {
                 Text("Fließt in die Trainingslast und deinen Bereitschafts-Score ein.")
             }
 
-            ForEach(session.entries.sorted(by: { $0.order < $1.order })) { entry in
+            ForEach(session.entryList.sorted(by: { $0.order < $1.order })) { entry in
                 Section(entry.exerciseName) {
-                    ForEach(Array(entry.sets.sorted(by: { $0.order < $1.order }).enumerated()), id: \.offset) { index, set in
+                    ForEach(Array(entry.setList.sorted(by: { $0.order < $1.order }).enumerated()), id: \.offset) { index, set in
                         HStack {
                             Text("Satz \(index + 1)")
                             Spacer()
