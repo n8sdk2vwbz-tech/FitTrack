@@ -19,6 +19,13 @@ final class SetEntry {
     var rpe: Double?
     var isWarmup: Bool = false
     var order: Int = 0
+    // Nie direkt genutzt, aber von CloudKit zwingend verlangt: jede
+    // Beziehung braucht eine explizite Gegen-Beziehung auf der anderen
+    // Seite, sonst scheitert das Laden des Containers komplett mit
+    // "CloudKit integration requires that all relationships have an
+    // inverse" - auch wenn der Rest der App nie von hier aus zurück auf
+    // die Übung zugreifen muss.
+    var exerciseEntry: ExerciseEntry?
 
     init(reps: Int, weightKg: Double, rpe: Double? = nil, isWarmup: Bool = false, order: Int = 0) {
         self.reps = reps
@@ -50,7 +57,10 @@ final class ExerciseEntry {
     // Optional statt eines nie-nil Arrays, weil SwiftDatas CloudKit-Sync das
     // für Beziehungen verlangt (siehe Kommentar über `PlanItem`) - der
     // Trainings-Verlauf syncet jetzt genau wie die Pläne über iCloud.
-    @Relationship(deleteRule: .cascade) var sets: [SetEntry]?
+    @Relationship(deleteRule: .cascade, inverse: \SetEntry.exerciseEntry) var sets: [SetEntry]?
+    /// Gegen-Beziehung zu `WorkoutSession.entries` - siehe Kommentar bei
+    /// `SetEntry.exerciseEntry`.
+    var workoutSession: WorkoutSession?
 
     init(exerciseId: String, exerciseName: String, order: Int = 0, sets: [SetEntry] = []) {
         self.exerciseId = exerciseId
@@ -109,7 +119,7 @@ final class WorkoutSession {
     // Optional statt eines nie-nil Arrays, weil SwiftDatas CloudKit-Sync das
     // für Beziehungen verlangt (siehe Kommentar über `PlanItem`) - der
     // Trainings-Verlauf syncet jetzt genau wie die Pläne über iCloud.
-    @Relationship(deleteRule: .cascade) var entries: [ExerciseEntry]?
+    @Relationship(deleteRule: .cascade, inverse: \ExerciseEntry.workoutSession) var entries: [ExerciseEntry]?
 
     var source: WorkoutSource {
         get { WorkoutSource(rawValue: sourceRaw) ?? .iphone }
@@ -267,12 +277,14 @@ final class WorkoutSession {
     }
 }
 
-/// Pläne (`TrainingPlan`/`PlanDay`/`PlanItem`) werden über iCloud synchronisiert
-/// (siehe `FitTrackApp.makeModelContainer`), der Trainings-Verlauf bleibt rein
-/// lokal. SwiftDatas CloudKit-Sync verlangt dafür: jede Property braucht einen
-/// Default-Wert (oder ist optional), und alle Beziehungen müssen optional
-/// sein - deshalb `items`/`days` als `Optional` mit den bequemen, nie-nil
-/// Zugriffs-Properties `itemList`/`dayList` für den Rest der App.
+/// Pläne (`TrainingPlan`/`PlanDay`/`PlanItem`) und der Trainings-Verlauf
+/// (`WorkoutSession`/`ExerciseEntry`/`SetEntry`) werden beide über iCloud
+/// synchronisiert (siehe `FitTrackApp.makeHistoryContainer`/
+/// `makePlansContainer`). SwiftDatas CloudKit-Sync verlangt dafür: jede
+/// Property braucht einen Default-Wert (oder ist optional), und alle
+/// Beziehungen müssen optional sein - deshalb `items`/`days` als `Optional`
+/// mit den bequemen, nie-nil Zugriffs-Properties `itemList`/`dayList` für den
+/// Rest der App.
 @Model
 final class PlanItem {
     var exerciseId: String = ""
@@ -299,6 +311,9 @@ final class PlanItem {
     /// beim nächsten Trainingsstart automatisch eine höhere Startgewicht vor
     /// und wird danach automatisch zurückgesetzt (siehe `ActiveWorkoutView`).
     var pendingWeightIncrease: Bool = false
+    /// Gegen-Beziehung zu `PlanDay.items` - von CloudKit zwingend verlangt
+    /// (siehe Kommentar bei `SetEntry.exerciseEntry`), nie direkt genutzt.
+    var planDay: PlanDay?
 
     init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = [], notes: String = "", pendingWeightIncrease: Bool = false) {
         self.exerciseId = exerciseId
@@ -329,7 +344,10 @@ final class PlanItem {
 final class PlanDay {
     var name: String = ""
     var order: Int = 0
-    @Relationship(deleteRule: .cascade) var items: [PlanItem]?
+    @Relationship(deleteRule: .cascade, inverse: \PlanItem.planDay) var items: [PlanItem]?
+    /// Gegen-Beziehung zu `TrainingPlan.days` - von CloudKit zwingend
+    /// verlangt (siehe Kommentar bei `SetEntry.exerciseEntry`), nie direkt genutzt.
+    var trainingPlan: TrainingPlan?
 
     init(name: String, order: Int = 0, items: [PlanItem] = []) {
         self.name = name
@@ -353,7 +371,7 @@ final class TrainingPlan {
     var name: String = ""
     var notes: String = ""
     var createdAt: Date = Date.now
-    @Relationship(deleteRule: .cascade) var days: [PlanDay]?
+    @Relationship(deleteRule: .cascade, inverse: \PlanDay.trainingPlan) var days: [PlanDay]?
 
     init(id: String = UUID().uuidString, name: String, notes: String = "", createdAt: Date = .now, days: [PlanDay] = []) {
         self.id = id
