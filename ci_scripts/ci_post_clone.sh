@@ -12,10 +12,23 @@ set -e
 # nicht eingecheckte Datei mit denselben Werten unangetastet, da dieses
 # Skript nur von Xcode Cloud selbst ausgeführt wird.
 
-CONFIG_PATH="$CI_WORKSPACE/FitTrack/Services/StravaConfig.swift"
+# CI_WORKSPACE ist in der ci_post_clone-Phase teils noch nicht gesetzt -
+# CI_PRIMARY_REPOSITORY_PATH ist die dafür vorgesehene, zu diesem frühen
+# Zeitpunkt zuverlässig verfügbare Variable für den Repo-Wurzelpfad.
+REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$CI_WORKSPACE}"
+if [ -z "$REPO_ROOT" ]; then
+    echo "error: weder CI_PRIMARY_REPOSITORY_PATH noch CI_WORKSPACE ist gesetzt" >&2
+    exit 1
+fi
+
+CONFIG_DIR="$REPO_ROOT/FitTrack/Services"
+CONFIG_PATH="$CONFIG_DIR/StravaConfig.swift"
+mkdir -p "$CONFIG_DIR"
 
 CLIENT_ID="${STRAVA_CLIENT_ID:-DEINE_CLIENT_ID}"
 CLIENT_SECRET="${STRAVA_CLIENT_SECRET:-DEIN_CLIENT_SECRET}"
+
+echo "Erzeuge $CONFIG_PATH"
 
 cat > "$CONFIG_PATH" <<EOF
 import Foundation
