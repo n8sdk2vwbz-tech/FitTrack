@@ -17,13 +17,19 @@ public struct RecoveryInputs {
     /// Ab `RecoveryEngine`s Schwelle (siehe dort) fließt zusätzlich die
     /// langfristige Belastung (ACWR) ein; davor zählt nur die aktuelle Einheit.
     public var sessionCount: Int
-    /// Belastung (Volumen × wahrgenommene Anstrengung) der zuletzt protokollierten
-    /// Trainingseinheit.
+    /// Kombinierte Belastung (Volumen × wahrgenommene Anstrengung) ALLER
+    /// Einheiten der letzten `RecoveryEngine.recentSessionLoadFadeDays` Tage,
+    /// dabei ist jede einzelne Einheit bereits nach ihrem eigenen Alter
+    /// abklingend gewichtet (siehe `DashboardViewModel`) - so behält z.B. ein
+    /// hartes Bein-Training auch dann noch spürbaren Einfluss, wenn danach
+    /// bereits eine neuere (z.B. Cardio-)Einheit protokolliert wurde, statt
+    /// beim Erscheinen einer neueren Einheit abrupt komplett zu verschwinden.
     public var recentSessionLoad: Double
-    /// Alter (in Tagen) dieser zuletzt protokollierten Einheit - lässt ihren
-    /// Einfluss auf den Score über `RecoveryEngine.recentSessionLoadFadeDays`
-    /// Tage hinweg abklingen, statt sie unbegrenzt lange (auch nach einer
-    /// Woche ohne neues Training) unverändert voll wirken zu lassen.
+    /// Alter (in Tagen) der zuletzt protokollierten Einheit - bestimmt nur
+    /// noch, wie stark der Trainingslast-Baustein gegenüber Schlaf/HRV/
+    /// Ruhepuls zusätzlich gewichtet wird (`freshnessBoost`), NICHT mehr das
+    /// Abklingen von `recentSessionLoad` selbst (das ist dort bereits
+    /// eingerechnet).
     public var daysSinceRecentSession: Double?
     /// Persönlicher Median der Sitzungs-Last aus früheren Einheiten (ohne die
     /// aktuellste), sobald genug Historie existiert - macht `recentSessionLoad`
@@ -138,13 +144,16 @@ public enum RecoveryEngine {
     /// Person tatsächlich anfühlte.
     private static let typicalSessionLoad = 1500.0
 
-    /// Nach wie vielen Tagen die Wirkung der zuletzt protokollierten Einheit
-    /// auf den Trainingslast-Baustein vollständig auf neutral (100) abgeklungen
-    /// ist, statt unbegrenzt lange (auch nach z.B. einer Woche ohne neues
-    /// Training) unverändert weiter voll auf den Score zu wirken. Angelehnt an
+    /// Nach wie vielen Tagen die Wirkung einer protokollierten Einheit auf den
+    /// Trainingslast-Baustein vollständig auf neutral (100) abgeklungen ist,
+    /// statt unbegrenzt lange (auch nach z.B. einer Woche ohne neues Training)
+    /// unverändert weiter voll auf den Score zu wirken. Angelehnt an
     /// `MuscleLoadCalculator`s akute (3-Tage-)Spanne plus etwas Puffer, da eine
-    /// einzelne harte Einheit üblicherweise nach 3-4 Tagen spürbar abgeklungen ist.
-    private static let recentSessionLoadFadeDays = 4.0
+    /// einzelne harte Einheit üblicherweise nach 3-4 Tagen spürbar abgeklungen
+    /// ist (echter Muskelkater klingt oft nicht schneller ab). Öffentlich,
+    /// damit `DashboardViewModel` beim Aufsummieren mehrerer letzter Einheiten
+    /// dasselbe Zeitfenster verwendet statt eines eigenen, abweichenden Werts.
+    public static let recentSessionLoadFadeDays = 4.0
 
     /// Bildet ein Belastungsverhältnis (z.B. ACWR, oder heutiges Volumen
     /// gegen einen Referenzwert) auf einen Score ab. Bewusst eine sanfte,
@@ -202,27 +211,21 @@ public enum RecoveryEngine {
         var loadScore: Int?
         var loadScoreParts: [Double] = []
 
-        // (1) Immer verfügbar, ab der allerersten Einheit: Volumen der
-        // zuletzt protokollierten Einheit gegen den eigenen typischen Wert
-        // (`personalTypicalSessionLoad`), sobald genug Historie existiert -
-        // sonst gegen den generischen `typicalSessionLoad`-Richtwert, da vor
+        // (1) Immer verfügbar, ab der allerersten Einheit: die (bereits nach
+        // Alter abklingend gewichtete, siehe `recentSessionLoad`-Dokumentation)
+        // kombinierte Belastung der letzten Tage gegen den eigenen typischen
+        // Wert (`personalTypicalSessionLoad`), sobald genug Historie existiert
+        // - sonst gegen den generischen `typicalSessionLoad`-Richtwert, da vor
         // der ersten Einheit noch keine eigene Historie existiert. Relativ
         // zum eigenen Durchschnitt statt zu einem für alle gleichen absoluten
         // Wert zu vergleichen ist wichtig, damit z.B. jemand, der grundsätzlich
         // mit geringerem Gewicht trainiert, bei einer für diese Person
         // tatsächlich harten Einheit auch einen entsprechend reduzierten Score
         // sieht - nicht dauerhaft 100, nur weil die absoluten kg-Zahlen klein sind.
-        // Klingt über `recentSessionLoadFadeDays` Tage auf neutral (100) ab,
-        // statt eine einzelne, länger zurückliegende Einheit unbegrenzt lange
-        // (z.B. auch nach einer Woche ohne neues Training) unverändert voll
-        // wirken zu lassen.
         if inputs.recentSessionLoad > 0.01 {
             let reference = inputs.personalTypicalSessionLoad ?? typicalSessionLoad
             let ratio = inputs.recentSessionLoad / reference
-            let rawScore = loadRatioScore(ratio)
-            let age = inputs.daysSinceRecentSession ?? 0
-            let fade = clamp(1 - age / recentSessionLoadFadeDays, 0, 1)
-            loadScoreParts.append(rawScore * fade + 100 * (1 - fade))
+            loadScoreParts.append(loadRatioScore(ratio))
         }
 
         // (2) Immer verfügbar, sofern bewertet: wie anstrengend fühlte sich

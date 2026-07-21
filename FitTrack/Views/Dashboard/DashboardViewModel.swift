@@ -36,18 +36,25 @@ final class DashboardViewModel: ObservableObject {
         let sessionCount = sessionLoadsWithDates.count
 
         // `recentSessionLoad` (Teil der "Trainingslast" in RecoveryEngine)
-        // summiert dagegen bewusst ALLE Einheiten desselben Kalendertags wie
-        // die zuletzt protokollierte - z.B. Cardio morgens + Krafttraining
-        // nachmittags zählen hier zusammen, statt dass nur die chronologisch
-        // letzte Einheit berücksichtigt wird und die andere unter den Tisch fällt.
+        // summiert ALLE Einheiten der letzten `recentSessionLoadFadeDays` Tage,
+        // jede einzeln nach ihrem eigenen Alter linear abklingend gewichtet -
+        // z.B. Cardio morgens + Krafttraining nachmittags zählen am selben Tag
+        // voll zusammen, und ein hartes Training von vor 2 Tagen trägt noch
+        // spürbar (nur etwas abgeschwächt) bei, statt beim Hinzukommen einer
+        // neueren Einheit (z.B. eines Laufs) schlagartig komplett zu
+        // verschwinden - echter Muskelkater hält schließlich auch mehrere
+        // Tage an, nicht nur bis zur nächsten protokollierten Einheit.
         let calendar = Calendar.current
         let mostRecentDate = sessionLoadsWithDates.last?.date
-        let recentSessionLoad = mostRecentDate.map { recentDate in
-            sessionLoadsWithDates
-                .filter { calendar.isDate($0.date, inSameDayAs: recentDate) }
-                .reduce(0.0) { $0 + $1.load }
-        } ?? 0
-        let daysSinceRecentSession = mostRecentDate.map { max(0, Date.now.timeIntervalSince($0) / 86400) }
+        let fadeDays = RecoveryEngine.recentSessionLoadFadeDays
+        let now = Date.now
+        let recentSessionLoad = sessionLoadsWithDates.reduce(0.0) { total, entry in
+            let ageInDays = max(0, now.timeIntervalSince(entry.date) / 86400)
+            guard ageInDays <= fadeDays else { return total }
+            let decay = max(0, 1 - ageInDays / fadeDays)
+            return total + entry.load * decay
+        }
+        let daysSinceRecentSession = mostRecentDate.map { max(0, now.timeIntervalSince($0) / 86400) }
 
         // Persönlicher Vergleichswert für `recentSessionLoad` (Median früherer
         // Einheiten, ohne den/die gerade betrachteten Tag) statt eines für
@@ -66,14 +73,17 @@ final class DashboardViewModel: ObservableObject {
             : nil
 
         // Wahrgenommene Anstrengung (RPE/Trainings-Herzfrequenz) der letzten
-        // ca. 2 Tage, neuere Einheiten stärker gewichtet - reagiert anders als
-        // die beiden Werte oben sofort, auch ganz ohne Trainingshistorie.
-        let now = Date.now
+        // Tage (dasselbe Zeitfenster wie `recentSessionLoad`), neuere
+        // Einheiten stärker gewichtet - reagiert anders als die beiden Werte
+        // oben sofort, auch ganz ohne Trainingshistorie. War vorher auf 2 Tage
+        // begrenzt - dadurch war bei einem Trainingsabstand von z.B. 1,8
+        // Tagen (wie bei echtem Muskelkater üblich) schon fast nichts mehr
+        // von der Anstrengung übrig.
         let recentIntensitySamples: [(weight: Double, intensity: Double)] = sessions.compactMap { session in
             guard session.perceivedExertion != nil || session.averageHeartRate != nil else { return nil }
             let ageInDays = now.timeIntervalSince(session.date) / 86400
-            guard ageInDays >= 0, ageInDays <= 2 else { return nil }
-            return (max(0, 1 - ageInDays / 2), session.intensityMultiplier(maxHeartRate: maxHeartRate))
+            guard ageInDays >= 0, ageInDays <= fadeDays else { return nil }
+            return (max(0, 1 - ageInDays / fadeDays), session.intensityMultiplier(maxHeartRate: maxHeartRate))
         }
         let recentIntensityWeight = recentIntensitySamples.reduce(0.0) { $0 + $1.weight }
         let recentIntensity: Double? = recentIntensityWeight > 0
