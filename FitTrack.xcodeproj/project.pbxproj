@@ -16,6 +16,7 @@
 		29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */; };
 		2BC5E769566E58DE20AA8907 /* NoAccessoryTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A09C36FE6DC179AF04FE34EA /* NoAccessoryTextField.swift */; };
 		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
+		391506C250D76DAE722C605A /* EditWorkoutExercisesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF69CEA9B7A8E92755B01942 /* EditWorkoutExercisesView.swift */; };
 		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
 		40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */; };
 		4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AC20A80C5B115A61B5486A /* ImportPlanView.swift */; };
@@ -122,6 +123,7 @@
 		BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkoutView.swift; sourceTree = "<group>"; };
 		C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainers.swift; sourceTree = "<group>"; };
 		CE225AB1AA73FA6D00182295 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CF69CEA9B7A8E92755B01942 /* EditWorkoutExercisesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutExercisesView.swift; sourceTree = "<group>"; };
 		D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitImportService.swift; sourceTree = "<group>"; };
 		D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWatchApp.swift; sourceTree = "<group>"; };
 		E018B0F76B185194F92BAF45 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */,
+				CF69CEA9B7A8E92755B01942 /* EditWorkoutExercisesView.swift */,
 				BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */,
 				FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */,
 				5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */,
@@ -468,6 +471,7 @@
 				F7C9315E9EBE2E1D8DB1EA3E /* AppContainers.swift in Sources */,
 				A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */,
 				50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */,
+				391506C250D76DAE722C605A /* EditWorkoutExercisesView.swift in Sources */,
 				78E652A8D396F93DC8890682 /* EffortRatingView.swift in Sources */,
 				4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */,
 				D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */,

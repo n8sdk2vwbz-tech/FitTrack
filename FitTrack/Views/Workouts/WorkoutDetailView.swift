@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WorkoutDetailView: View {
     @Bindable var session: WorkoutSession
+    @State private var showingAddExercises = false
 
     var body: some View {
         List {
@@ -52,6 +53,18 @@ struct WorkoutDetailView: View {
         }
         .navigationTitle(session.activityName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showingAddExercises = true
+                } label: {
+                    Label("Übungen nachtragen", systemImage: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddExercises) {
+            EditWorkoutExercisesView(session: session)
+        }
     }
 
     private var sourceText: String {
