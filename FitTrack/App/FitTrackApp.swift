@@ -14,6 +14,9 @@ struct FitTrackApp: App {
         AppContainers.history = history
         AppContainers.plans = plans
         FitTrackApp.migratePlansIfNeeded(from: history, to: plans)
+        FitTrackApp.deduplicateSessionsIfNeeded(in: history)
+        FitTrackApp.deduplicatePlansIfNeeded(in: history)
+        FitTrackApp.deduplicatePlansIfNeeded(in: plans)
     }
 
     var body: some Scene {
@@ -233,6 +236,69 @@ struct FitTrackApp: App {
         try? oldContext.save()
 
         UserDefaults.standard.set(true, forKey: migrationKey)
+    }
+
+    /// Räumt Duplikate auf, die durch die Selbstheilung in
+    /// `makeHistoryContainer` entstehen konnten: dort wird bei einem
+    /// inkompatiblen alten lokalen Store dessen Inhalt unter neuer
+    /// CloudKit-Unterstützung zurückkopiert - lief das über mehrere Starts
+    /// hinweg mehrfach (z.B. weil das Laden zunächst mehrfach fehlschlug),
+    /// wurden dieselben Trainings jedes Mal erneut eingefügt, statt zu prüfen,
+    /// ob sie schon existieren. Bewusst bei jedem Start (nicht nur einmalig)
+    /// ausgeführt, da der Scan bei überschaubarer Trainingsanzahl günstig ist
+    /// und so auch künftige, unvorhergesehene Duplikate zuverlässig wieder
+    /// verschwinden. Zwei Trainings gelten als dasselbe, wenn ihre `id`
+    /// übereinstimmt (Migrations-Duplikat) oder ihre `healthKitWorkoutUUID`
+    /// (z.B. wenn der HealthKit-Import zweimal für dasselbe Workout lief).
+    private static func deduplicateSessionsIfNeeded(in container: ModelContainer) {
+        let context = ModelContext(container)
+        guard let sessions = try? context.fetch(FetchDescriptor<WorkoutSession>()), sessions.count > 1 else { return }
+
+        var seenIds = Set<String>()
+        var seenHealthKitUUIDs = Set<String>()
+        var duplicates: [WorkoutSession] = []
+
+        for session in sessions.sorted(by: { $0.date < $1.date }) {
+            let isDuplicateId = seenIds.contains(session.id)
+            let isDuplicateHealthKitUUID = session.healthKitWorkoutUUID.map { seenHealthKitUUIDs.contains($0) } ?? false
+            if isDuplicateId || isDuplicateHealthKitUUID {
+                duplicates.append(session)
+                continue
+            }
+            seenIds.insert(session.id)
+            if let uuid = session.healthKitWorkoutUUID { seenHealthKitUUIDs.insert(uuid) }
+        }
+
+        guard !duplicates.isEmpty else { return }
+        for duplicate in duplicates {
+            context.delete(duplicate)
+        }
+        try? context.save()
+    }
+
+    /// Dieselbe Aufräum-Logik wie `deduplicateSessionsIfNeeded`, für Pläne -
+    /// betrifft sowohl den History- (Kompatibilitäts-Schema) als auch den
+    /// Plans-Container, da beide von derselben Selbstheilung betroffen sein können.
+    private static func deduplicatePlansIfNeeded(in container: ModelContainer) {
+        let context = ModelContext(container)
+        guard let plans = try? context.fetch(FetchDescriptor<TrainingPlan>()), plans.count > 1 else { return }
+
+        var seenIds = Set<String>()
+        var duplicates: [TrainingPlan] = []
+
+        for plan in plans.sorted(by: { $0.createdAt < $1.createdAt }) {
+            if seenIds.contains(plan.id) {
+                duplicates.append(plan)
+            } else {
+                seenIds.insert(plan.id)
+            }
+        }
+
+        guard !duplicates.isEmpty else { return }
+        for duplicate in duplicates {
+            context.delete(duplicate)
+        }
+        try? context.save()
     }
 }
 
