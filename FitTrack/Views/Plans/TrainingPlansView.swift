@@ -5,6 +5,7 @@ struct TrainingPlansView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TrainingPlan.createdAt, order: .reverse) private var plans: [TrainingPlan]
     @State private var showingGenerator = false
+    @State private var showingAIImport = false
     @State private var createdPlan: TrainingPlan?
 
     var body: some View {
@@ -31,6 +32,11 @@ struct TrainingPlansView: View {
                         } label: {
                             Label("Plan erstellen lassen", systemImage: "wand.and.stars")
                         }
+                        Button {
+                            showingAIImport = true
+                        } label: {
+                            Label("Mit Claude/ChatGPT erstellen", systemImage: "sparkles")
+                        }
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -43,6 +49,11 @@ struct TrainingPlansView: View {
             }
             .sheet(isPresented: $showingGenerator) {
                 GeneratePlanView { plan in
+                    createdPlan = plan
+                }
+            }
+            .sheet(isPresented: $showingAIImport) {
+                AIPlanImportView { plan in
                     createdPlan = plan
                 }
             }

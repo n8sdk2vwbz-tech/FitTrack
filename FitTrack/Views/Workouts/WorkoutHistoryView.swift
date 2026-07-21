@@ -11,6 +11,7 @@ struct WorkoutHistoryView: View {
     @State private var isImporting = false
     @State private var uploadingSessionId: String?
     @State private var stravaErrorMessage: String?
+    @State private var showingExport = false
 
     private var weeklyVolume: [(weekStart: Date, volume: Double)] {
         let calendar = Calendar.current
@@ -124,6 +125,13 @@ struct WorkoutHistoryView: View {
                         Image(systemName: "plus")
                     }
                 }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        showingExport = true
+                    } label: {
+                        Label("Für KI-Analyse exportieren", systemImage: "square.and.arrow.up")
+                    }
+                }
             }
             .overlay {
                 if sessions.isEmpty {
@@ -136,6 +144,9 @@ struct WorkoutHistoryView: View {
             }
             .sheet(isPresented: $showingLogSheet) {
                 LogWorkoutView()
+            }
+            .sheet(isPresented: $showingExport) {
+                TrainingExportView()
             }
             .fullScreenCover(isPresented: $showingActiveWorkout) {
                 ActiveWorkoutView(planDay: nil)

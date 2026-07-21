@@ -12,6 +12,79 @@ enum WorkoutSource: String, Codable {
     case health
 }
 
+/// Täglicher Schnappschuss des Bereitschafts-Scores (siehe `RecoveryEngine`),
+/// höchstens einer pro Kalendertag. `RecoveryEngine`/`DashboardViewModel`
+/// berechnen die Bereitschaft bisher nur live "für heute" aus HealthKit -
+/// ohne diese Speicherung gäbe es keine Historie, aus der sich später ein
+/// Zeitraum-Export (z.B. für eine KI-Trainingsanalyse) erstellen ließe.
+/// Wächst deshalb erst ab Einführung dieser Funktion, kann nicht rückwirkend
+/// für vergangene Tage rekonstruiert werden.
+@Model
+final class DailyReadinessSnapshot {
+    var day: Date = Date.now
+    var score: Int = 0
+    var categoryRaw: String = ReadinessCategory.adequate.rawValue
+    var sleepScore: Int?
+    var hrvScore: Int?
+    var rhrScore: Int?
+    var trainingLoadScore: Int?
+    var sleepHours: Double?
+    var hrvMs: Double?
+    var hrvBaselineMs: Double?
+    var restingHeartRate: Double?
+    var restingHeartRateBaseline: Double?
+
+    init(
+        day: Date,
+        score: Int,
+        category: ReadinessCategory,
+        sleepScore: Int?,
+        hrvScore: Int?,
+        rhrScore: Int?,
+        trainingLoadScore: Int?,
+        sleepHours: Double?,
+        hrvMs: Double?,
+        hrvBaselineMs: Double?,
+        restingHeartRate: Double?,
+        restingHeartRateBaseline: Double?
+    ) {
+        self.day = day
+        self.score = score
+        self.categoryRaw = category.rawValue
+        self.sleepScore = sleepScore
+        self.hrvScore = hrvScore
+        self.rhrScore = rhrScore
+        self.trainingLoadScore = trainingLoadScore
+        self.sleepHours = sleepHours
+        self.hrvMs = hrvMs
+        self.hrvBaselineMs = hrvBaselineMs
+        self.restingHeartRate = restingHeartRate
+        self.restingHeartRateBaseline = restingHeartRateBaseline
+    }
+
+    var category: ReadinessCategory {
+        get { ReadinessCategory(rawValue: categoryRaw) ?? .adequate }
+        set { categoryRaw = newValue.rawValue }
+    }
+
+    /// Übernimmt Score-Werte aus einem frisch berechneten `ReadinessResult` -
+    /// genutzt, um den Snapshot für den heutigen Tag zu aktualisieren, statt
+    /// bei jedem Dashboard-Refresh einen neuen Eintrag anzulegen.
+    func update(with readiness: ReadinessResult) {
+        score = readiness.score
+        categoryRaw = readiness.category.rawValue
+        sleepScore = readiness.sleepScore
+        hrvScore = readiness.hrvScore
+        rhrScore = readiness.rhrScore
+        trainingLoadScore = readiness.trainingLoadScore
+        sleepHours = readiness.sleepHours
+        hrvMs = readiness.hrvMs
+        hrvBaselineMs = readiness.hrvBaselineMs
+        restingHeartRate = readiness.restingHeartRate
+        restingHeartRateBaseline = readiness.restingHeartRateBaseline
+    }
+}
+
 @Model
 final class SetEntry {
     var reps: Int = 0

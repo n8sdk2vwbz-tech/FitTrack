@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import FitTrackShared
 
 @MainActor
@@ -7,7 +8,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var muscleStatuses: [MuscleGroup: MuscleLoadStatus] = [:]
     @Published var isLoading = false
 
-    func refresh(sessions: [WorkoutSession]) async {
+    func refresh(sessions: [WorkoutSession], modelContext: ModelContext) async {
         isLoading = true
         defer { isLoading = false }
 
@@ -119,7 +120,36 @@ final class DashboardViewModel: ObservableObject {
         )
 
         muscleStatuses = statuses
-        readiness = RecoveryEngine.evaluate(inputs: inputs)
+        let result = RecoveryEngine.evaluate(inputs: inputs)
+        readiness = result
+        saveSnapshot(result, modelContext: modelContext)
+    }
+
+    /// Sichert den heutigen Bereitschafts-Score dauerhaft (siehe
+    /// `DailyReadinessSnapshot`) - höchstens ein Eintrag pro Kalendertag,
+    /// spätere Aufrufe am selben Tag aktualisieren nur den bestehenden.
+    private func saveSnapshot(_ result: ReadinessResult, modelContext: ModelContext) {
+        let day = Calendar.current.startOfDay(for: .now)
+        let descriptor = FetchDescriptor<DailyReadinessSnapshot>(predicate: #Predicate { $0.day == day })
+        if let existing = try? modelContext.fetch(descriptor).first {
+            existing.update(with: result)
+        } else {
+            modelContext.insert(DailyReadinessSnapshot(
+                day: day,
+                score: result.score,
+                category: result.category,
+                sleepScore: result.sleepScore,
+                hrvScore: result.hrvScore,
+                rhrScore: result.rhrScore,
+                trainingLoadScore: result.trainingLoadScore,
+                sleepHours: result.sleepHours,
+                hrvMs: result.hrvMs,
+                hrvBaselineMs: result.hrvBaselineMs,
+                restingHeartRate: result.restingHeartRate,
+                restingHeartRateBaseline: result.restingHeartRateBaseline
+            ))
+        }
+        try? modelContext.save()
     }
 
     private func median(_ values: [Double]) -> Double {

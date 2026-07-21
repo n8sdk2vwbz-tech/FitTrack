@@ -32,7 +32,8 @@ struct FitTrackApp: App {
         SetEntry.self,
         TrainingPlan.self,
         PlanDay.self,
-        PlanItem.self
+        PlanItem.self,
+        DailyReadinessSnapshot.self
     ])
 
     private static let plansSchema = Schema([TrainingPlan.self, PlanDay.self, PlanItem.self])

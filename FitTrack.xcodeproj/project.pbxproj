@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01BC1DBF2BA02B7CC55B0B47 /* TrainingExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */; };
 		049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */; };
 		071074D98643CE9F97D18EFC /* RemoteMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */; };
 		1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1619974B38585E7316A89052 /* IntAdjuster.swift */; };
@@ -26,6 +27,7 @@
 		510F5B27547A326017C692E5 /* ExerciseMultiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */; };
 		52AB611343B24A086BA267E5 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E018B0F76B185194F92BAF45 /* WorkoutManager.swift */; };
 		54CA25600D8C4E3DDED69B42 /* StravaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CD9E760E77CB1799A425D2 /* StravaConfig.swift */; };
+		5672C4B5F72B74885675C0B6 /* AIPlanImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D9AC70A962D5C3725885D51 /* AIPlanImportView.swift */; };
 		581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AD5FC608211E8FA168028 /* WeightAdjuster.swift */; };
 		5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */; };
 		6F3A77E070D07D528EB1C5C5 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55458F2FF281E4BF301C4BB3 /* SummaryView.swift */; };
@@ -38,6 +40,7 @@
 		95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0EB6D74DC3DB7E80C889336A /* Assets.xcassets */; };
 		9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */; };
 		A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181778660D0A233239C1AEE8 /* DashboardView.swift */; };
+		ADD4F5235D297E7FDABF56CD /* AIPlanImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF557F93799E9EBA39B0B82 /* AIPlanImport.swift */; };
 		B29253509B94554E8B7FBE24 /* SharePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */; };
 		BA242192BDFBB013A5C10CE1 /* StravaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5302754DE0308CEBF15F484A /* StravaManager.swift */; };
 		BAF2E6C04A28239FA47C916B /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = A226CB3FDA21209397ACF82D /* FitTrackShared */; };
@@ -89,6 +92,7 @@
 		1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDayDetailView.swift; sourceTree = "<group>"; };
 		1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		1CBBCECF0CA54BDD0785ECDE /* FitTrackDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackDebug.entitlements; sourceTree = "<group>"; };
+		1D9AC70A962D5C3725885D51 /* AIPlanImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPlanImportView.swift; sourceTree = "<group>"; };
 		253C621FEB179B544870220D /* GeneratePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratePlanView.swift; sourceTree = "<group>"; };
 		309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		32CD9E760E77CB1799A425D2 /* StravaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaConfig.swift; sourceTree = "<group>"; };
@@ -122,6 +126,8 @@
 		D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWatchApp.swift; sourceTree = "<group>"; };
 		E018B0F76B185194F92BAF45 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		F8F50216CAB8ACCF4AB7F0DB /* FitTrackWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackWatch.entitlements; sourceTree = "<group>"; };
+		FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingExportView.swift; sourceTree = "<group>"; };
+		FCF557F93799E9EBA39B0B82 /* AIPlanImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPlanImport.swift; sourceTree = "<group>"; };
 		FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteMonitoringView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -208,6 +214,7 @@
 			children = (
 				1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */,
 				BD9273DDA216EF77D5783B41 /* LogWorkoutView.swift */,
+				FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */,
 				5AFB922CC410ACEEF54F40CA /* WorkoutDetailView.swift */,
 				3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */,
 			);
@@ -266,6 +273,7 @@
 		A6D4113687E5066425FC0DAF /* Plans */ = {
 			isa = PBXGroup;
 			children = (
+				1D9AC70A962D5C3725885D51 /* AIPlanImportView.swift */,
 				06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */,
 				253C621FEB179B544870220D /* GeneratePlanView.swift */,
 				45AC20A80C5B115A61B5486A /* ImportPlanView.swift */,
@@ -336,6 +344,7 @@
 		F797FA91D40F8592BAA6597C /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				FCF557F93799E9EBA39B0B82 /* AIPlanImport.swift */,
 				D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */,
 				3899B6473B8E615422764613 /* WorkoutModels.swift */,
 			);
@@ -453,6 +462,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADD4F5235D297E7FDABF56CD /* AIPlanImport.swift in Sources */,
+				5672C4B5F72B74885675C0B6 /* AIPlanImportView.swift in Sources */,
 				FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */,
 				F7C9315E9EBE2E1D8DB1EA3E /* AppContainers.swift in Sources */,
 				A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */,
@@ -479,6 +490,7 @@
 				54CA25600D8C4E3DDED69B42 /* StravaConfig.swift in Sources */,
 				BA242192BDFBB013A5C10CE1 /* StravaManager.swift in Sources */,
 				4E6229116D7CD4124AA95CC8 /* StravaSettingsView.swift in Sources */,
+				01BC1DBF2BA02B7CC55B0B47 /* TrainingExportView.swift in Sources */,
 				7302788ABF8BE9BBE5DC450A /* TrainingPlansView.swift in Sources */,
 				581FDD861604AA14A15EDDCB /* WeightAdjuster.swift in Sources */,
 				C2F62D3C60645DCD6C1FE5D6 /* WorkoutDetailView.swift in Sources */,

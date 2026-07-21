@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct DashboardView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \WorkoutSession.date, order: .reverse) private var sessions: [WorkoutSession]
     @StateObject private var viewModel = DashboardViewModel()
     @State private var showingSettings = false
@@ -43,17 +44,17 @@ struct DashboardView: View {
             .sheet(isPresented: $showingSettings) {
                 StravaSettingsView()
             }
-            .task { await viewModel.refresh(sessions: sessions) }
-            .refreshable { await viewModel.refresh(sessions: sessions) }
+            .task { await viewModel.refresh(sessions: sessions, modelContext: modelContext) }
+            .refreshable { await viewModel.refresh(sessions: sessions, modelContext: modelContext) }
             .onChange(of: sessions.count) {
-                Task { await viewModel.refresh(sessions: sessions) }
+                Task { await viewModel.refresh(sessions: sessions, modelContext: modelContext) }
             }
             .onAppear {
                 // Deckt auch den Fall ab, dass sich ein bestehendes Training
                 // geändert hat (z.B. Anstrengung nachträglich im Verlauf
                 // bewertet) - `sessions.count` bleibt dabei gleich, würde also
                 // sonst keinen Refresh auslösen.
-                Task { await viewModel.refresh(sessions: sessions) }
+                Task { await viewModel.refresh(sessions: sessions, modelContext: modelContext) }
             }
         }
     }
