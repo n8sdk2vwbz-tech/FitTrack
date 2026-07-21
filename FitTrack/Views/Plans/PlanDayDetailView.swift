@@ -120,10 +120,43 @@ private struct PlanItemRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(item.exerciseName).font(.body)
+            // Eigene Zeile für "Sätze", statt zusammen mit "Wdh."/"bis" in
+            // eine Zeile gequetscht zu werden - mit aktiver Spanne (3
+            // Stepper: Wdh., bis, Sätze) lief die Zeile sonst über den
+            // Bildschirmrand hinaus und verschob dadurch die ganze Liste
+            // seitlich, statt einfach abzuschneiden.
             HStack(spacing: 24) {
                 compactStepper(label: "Sätze", value: $item.targetSets, range: 1...10)
-                compactStepper(label: "Wdh.", value: $item.targetReps, range: 1...30)
                 Spacer()
+            }
+            HStack(spacing: 12) {
+                compactStepper(label: "Wdh.", value: $item.targetReps, range: 1...30)
+                if item.targetRepsMax != nil {
+                    compactStepper(label: "bis", value: targetRepsMaxBinding, range: item.targetReps...30)
+                }
+                // Kompakter Icon-Button statt eines eigenen Text-Links, um die
+                // Wdh. als Spanne (z.B. "6-8") ein-/auszuschalten.
+                Button {
+                    item.targetRepsMax = item.targetRepsMax == nil ? min(item.targetReps + 2, 30) : nil
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: item.targetRepsMax == nil ? "plus.circle" : "xmark.circle.fill")
+                        if item.targetRepsMax == nil {
+                            Text("Spanne")
+                        }
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(item.targetRepsMax == nil ? Color.accentColor : Color.secondary)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+            .onChange(of: item.targetReps) { _, newValue in
+                // Verhindert eine "Spanne" wie 8-6, falls die untere Grenze
+                // über die obere angehoben wird.
+                if let max = item.targetRepsMax, max < newValue {
+                    item.targetRepsMax = newValue
+                }
             }
             HStack(spacing: 24) {
                 compactStepper(label: "Aufwärmsätze", value: $item.warmupSetCount, range: 0...5)
@@ -190,13 +223,20 @@ private struct PlanItemRow: View {
         item.alternativeExerciseNames = names
     }
 
-    private func compactStepper(label: String, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
+    private var targetRepsMaxBinding: Binding<Int> {
+        Binding(
+            get: { item.targetRepsMax ?? item.targetReps },
+            set: { item.targetRepsMax = $0 }
+        )
+    }
+
+    private func compactStepper(label: String, value: Binding<Int>, range: ClosedRange<Int>, step: Int = 1, suffix: String = "") -> some View {
         HStack(spacing: 6) {
-            Text("\(label) \(value.wrappedValue)")
+            Text("\(label) \(value.wrappedValue)\(suffix)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize()
-            Stepper("", value: value, in: range)
+            Stepper("", value: value, in: range, step: step)
                 .labelsHidden()
         }
     }

@@ -291,6 +291,12 @@ final class PlanItem {
     var exerciseName: String = ""
     var targetSets: Int = 3
     var targetReps: Int = 10
+    /// Obere Grenze, falls die Ziel-Wdh. als Spanne angegeben sind (z.B.
+    /// "6-8" statt nur "8") - `targetReps` ist dann die untere Grenze. `nil`
+    /// (oder ein Wert <= `targetReps`) bedeutet "keine Spanne, fester Wert".
+    /// Die tatsächlich pro Satz ausgeführte Wiederholungszahl wird davon
+    /// unabhängig im Training selbst eingegeben (siehe `SetEntry.reps`).
+    var targetRepsMax: Int?
     /// Dient zugleich als Gedächtnis: wird nach jedem Training mit dieser
     /// Übung an dieser Stelle im Plan auf das zuletzt genutzte Gewicht
     /// aktualisiert, damit sie beim nächsten Mal automatisch vorausgefüllt
@@ -315,11 +321,12 @@ final class PlanItem {
     /// (siehe Kommentar bei `SetEntry.exerciseEntry`), nie direkt genutzt.
     var planDay: PlanDay?
 
-    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = [], notes: String = "", pendingWeightIncrease: Bool = false) {
+    init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetRepsMax: Int? = nil, targetWeightKg: Double? = nil, warmupSetCount: Int = 0, order: Int = 0, alternativeExerciseIds: [String] = [], alternativeExerciseNames: [String] = [], notes: String = "", pendingWeightIncrease: Bool = false) {
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
         self.targetSets = targetSets
         self.targetReps = targetReps
+        self.targetRepsMax = targetRepsMax
         self.targetWeightKg = targetWeightKg
         self.warmupSetCount = warmupSetCount
         self.order = order
@@ -329,14 +336,23 @@ final class PlanItem {
         self.pendingWeightIncrease = pendingWeightIncrease
     }
 
+    /// Zeigt die Ziel-Wdh. als Spanne ("6-8") an, falls gesetzt, sonst als
+    /// einzelne Zahl ("8").
+    var targetRepsDisplay: String {
+        if let max = targetRepsMax, max > targetReps {
+            return "\(targetReps)-\(max)"
+        }
+        return "\(targetReps)"
+    }
+
     func toDTO() -> PlanItemDTO {
-        PlanItemDTO(id: UUID().uuidString, exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, targetWeightKg: targetWeightKg)
+        PlanItemDTO(id: UUID().uuidString, exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, targetRepsMax: targetRepsMax, targetWeightKg: targetWeightKg)
     }
 
     /// Für das Teilen eines Plans mit einer anderen Person - bewusst ohne
     /// Gewicht/Steigerungs-Merker/Alternativen (siehe `SharedPlanItemDTO`).
     func toSharedDTO() -> SharedPlanItemDTO {
-        SharedPlanItemDTO(exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, warmupSetCount: warmupSetCount, notes: notes)
+        SharedPlanItemDTO(exerciseId: exerciseId, exerciseName: exerciseName, targetSets: targetSets, targetReps: targetReps, targetRepsMax: targetRepsMax, warmupSetCount: warmupSetCount, notes: notes)
     }
 }
 
@@ -404,6 +420,7 @@ extension SharedPlanDTO {
                     exerciseName: item.exerciseName,
                     targetSets: item.targetSets,
                     targetReps: item.targetReps,
+                    targetRepsMax: item.targetRepsMax,
                     targetWeightKg: nil,
                     warmupSetCount: item.warmupSetCount,
                     order: itemIndex,

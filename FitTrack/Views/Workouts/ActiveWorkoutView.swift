@@ -108,6 +108,11 @@ struct ActiveWorkoutView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        if let planItem = live.planItem, planItem.targetRepsMax != nil {
+                            Text("Ziel: \(planItem.targetRepsDisplay) Wdh.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                         if let notes = live.planItem?.notes, !notes.isEmpty {
                             Label(notes, systemImage: "note.text")
                                 .font(.caption)
@@ -291,25 +296,38 @@ struct ActiveWorkoutView: View {
         }
     }
 
-    /// Berechnet Aufwärmsätze als ansteigende Gewichts-Rampe von ca. 40% bis
-    /// 85% des Arbeitsgewichts (bei nur einem Aufwärmsatz 50%), mit dazu
-    /// passend ABNEHMENDER Wiederholungszahl: großzügig beim leichten
-    /// Aktivierungssatz, nur noch sehr wenige kurz vor dem Arbeitsgewicht -
-    /// statt bei jedem Aufwärmsatz identisch viele Wiederholungen wie im
-    /// Arbeitssatz vorzuschlagen.
+    /// Gewichts-Anteil vom Arbeitsgewicht und Wiederholungen je Aufwärmsatz,
+    /// je nach Gesamtzahl der Aufwärmsätze - angelehnt an eine verbreitete
+    /// evidenzbasierte Aufwärm-Tabelle ("Exercise-Specific Warm-Up"). Deren
+    /// Wiederholungs-Spannen (z.B. "6-10") sind hier bewusst auf den oberen
+    /// Wert gerundet. Für 5 Aufwärmsätze existiert dort keine Vorgabe - eigene
+    /// Erweiterung des Musters (ein zusätzlicher Zwischenschritt) statt einer
+    /// Vermutung ins Blaue.
+    private static let warmupTemplates: [Int: [(percent: Double, reps: Int)]] = [
+        1: [(0.60, 10)],
+        2: [(0.50, 10), (0.70, 6)],
+        3: [(0.45, 10), (0.65, 6), (0.85, 4)],
+        4: [(0.45, 10), (0.60, 6), (0.75, 5), (0.85, 4)],
+        5: [(0.40, 10), (0.55, 8), (0.65, 6), (0.78, 4), (0.88, 3)]
+    ]
+
     private func warmupSets(workWeight: Double, workReps: Int, count: Int) -> [(weight: Double, reps: Int)] {
         guard count > 0 else { return [] }
         guard workWeight > 0 else { return Array(repeating: (0, workReps), count: count) }
-        guard count > 1 else { return [(roundToRealisticWeight(workWeight * 0.5), max(workReps, 6))] }
 
-        let generousReps = max(workReps + 2, 6)
-        return (0..<count).map { i in
-            let fraction = 0.4 + 0.45 * Double(i) / Double(count - 1)
-            let weight = roundToRealisticWeight(workWeight * fraction)
-            let rampFraction = Double(i) / Double(count - 1) // 0 = leichtester, 1 = schwerster Aufwärmsatz
-            let reps = generousReps - Int((Double(generousReps - 2) * rampFraction).rounded())
-            return (weight, max(2, reps))
+        let template = Self.warmupTemplates[count] ?? Self.warmupTemplates[4] ?? [(0.60, 10)]
+        return template.map { entry in
+            (roundUpToRealisticWeight(workWeight * entry.percent), entry.reps)
         }
+    }
+
+    /// Rundet nach oben (nie ab) auf das Plattenschritt-Raster - bei
+    /// prozentual berechneten Aufwärmgewichten lieber etwas schwerer als zu
+    /// leicht, damit der Aufwärmeffekt nicht zu gering ausfällt.
+    private func roundUpToRealisticWeight(_ weight: Double) -> Double {
+        guard weight > 0 else { return 0 }
+        let increment = warmupWeightIncrementKg
+        return (weight / increment).rounded(.up) * increment
     }
 
     /// Berechnet die Aufwärmsätze einer Übung anhand des aktuell im ersten

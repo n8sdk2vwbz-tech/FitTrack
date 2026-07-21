@@ -214,6 +214,7 @@ struct FitTrackApp: App {
                         exerciseName: oldItem.exerciseName,
                         targetSets: oldItem.targetSets,
                         targetReps: oldItem.targetReps,
+                        targetRepsMax: oldItem.targetRepsMax,
                         targetWeightKg: oldItem.targetWeightKg,
                         warmupSetCount: oldItem.warmupSetCount,
                         order: oldItem.order
@@ -404,6 +405,7 @@ private struct PlanItemSnapshot {
     let exerciseName: String
     let targetSets: Int
     let targetReps: Int
+    let targetRepsMax: Int?
     let targetWeightKg: Double?
     let warmupSetCount: Int
     let order: Int
@@ -417,6 +419,7 @@ private struct PlanItemSnapshot {
         exerciseName = item.exerciseName
         targetSets = item.targetSets
         targetReps = item.targetReps
+        targetRepsMax = item.targetRepsMax
         targetWeightKg = item.targetWeightKg
         warmupSetCount = item.warmupSetCount
         order = item.order
@@ -432,6 +435,7 @@ private struct PlanItemSnapshot {
             exerciseName: exerciseName,
             targetSets: targetSets,
             targetReps: targetReps,
+            targetRepsMax: targetRepsMax,
             targetWeightKg: targetWeightKg,
             warmupSetCount: warmupSetCount,
             order: order,

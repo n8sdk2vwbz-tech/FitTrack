@@ -10,14 +10,17 @@ public struct PlanItemDTO: Codable, Identifiable, Hashable {
     public let exerciseName: String
     public let targetSets: Int
     public let targetReps: Int
+    /// Obere Grenze, falls die Ziel-Wdh. als Spanne angegeben sind (siehe `PlanItem.targetRepsMax`).
+    public let targetRepsMax: Int?
     public let targetWeightKg: Double?
 
-    public init(id: String, exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetWeightKg: Double?) {
+    public init(id: String, exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetRepsMax: Int? = nil, targetWeightKg: Double?) {
         self.id = id
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
         self.targetSets = targetSets
         self.targetReps = targetReps
+        self.targetRepsMax = targetRepsMax
         self.targetWeightKg = targetWeightKg
     }
 }
@@ -157,6 +160,8 @@ public struct SharedPlanItemDTO: Codable, Hashable {
     public let exerciseName: String
     public let targetSets: Int
     public let targetReps: Int
+    /// Obere Grenze, falls die Ziel-Wdh. als Spanne angegeben sind (siehe `PlanItem.targetRepsMax`).
+    public let targetRepsMax: Int?
     public let warmupSetCount: Int
     public let notes: String
 
@@ -165,15 +170,17 @@ public struct SharedPlanItemDTO: Codable, Hashable {
         case exerciseName = "n"
         case targetSets = "s"
         case targetReps = "r"
+        case targetRepsMax = "x"
         case warmupSetCount = "w"
         case notes = "o"
     }
 
-    public init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, warmupSetCount: Int, notes: String) {
+    public init(exerciseId: String, exerciseName: String, targetSets: Int, targetReps: Int, targetRepsMax: Int? = nil, warmupSetCount: Int, notes: String) {
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
         self.targetSets = targetSets
         self.targetReps = targetReps
+        self.targetRepsMax = targetRepsMax
         self.warmupSetCount = warmupSetCount
         self.notes = notes
     }
