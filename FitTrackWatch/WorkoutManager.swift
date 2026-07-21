@@ -187,7 +187,12 @@ final class WorkoutManager: NSObject, ObservableObject {
             try? await Task.sleep(nanoseconds: 15_000_000_000)
             guard let self, !Task.isCancelled else { return }
             guard self.isRemoteControlled, self.remoteSessionId == nil else { return }
-            self.end()
+            // Anders als beim Reachability- oder 3-Stunden-Sicherheitsnetz:
+            // hier kam nie eine bestätigte Session-ID vom iPhone an, es gibt
+            // also garantiert kein echtes, laufendes Training zu bewahren -
+            // verwerfen statt (fälschlich) als Sekunden-kurzes "Workout" in
+            // Health zu speichern.
+            self.end(discard: true)
         }
     }
 
