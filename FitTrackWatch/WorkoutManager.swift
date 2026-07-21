@@ -53,12 +53,15 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// Trainings völlig normal und meist nach wenigen Sekunden wieder vorbei.
     /// War dieser Wert bei 30s, beendete (und speicherte!) dieses
     /// Sicherheitsnetz regelmäßig noch laufende Trainings von selbst, obwohl
-    /// gar nichts wirklich schiefgelaufen war - und ein zwischenzeitlich vom
-    /// iPhone gesendeter, korrekter Abbrechen-Befehl (der garantiert, aber
-    /// eventuell leicht verspätet zugestellt wird) kam dann zu spät, weil die
-    /// Session zu diesem Zeitpunkt bereits (fälschlich nicht verworfen)
-    /// beendet war. 5 Minuten geben der garantierten Zustellung genug Zeit.
-    private let unreachableTimeoutSeconds: UInt64 = 300
+    /// gar nichts wirklich schiefgelaufen war. 5 Minuten behoben das, hatten
+    /// aber einen echten Zielkonflikt: kommt der eigentliche Abbrechen-/
+    /// Beenden-Befehl aus irgendeinem Grund (z.B. eine hartnäckigere
+    /// Verbindungsstörung) tatsächlich gar nicht an, hängt die Watch-App bis
+    /// zu 5 Minuten fest, statt sich zeitnah selbst aufzulösen - spürbar
+    /// länger, als es sich richtig anfühlt. 90 Sekunden sind immer noch weit
+    /// über allem, was ein normaler kurzer Aussetzer braucht, lassen die App
+    /// im Fehlerfall aber deutlich früher wieder los.
+    private let unreachableTimeoutSeconds: UInt64 = 90
     /// Absolute Obergrenze für eine ferngesteuerte Session, unabhängig von der
     /// Erreichbarkeit - deckt den Fall ab, dass das iPhone zwar verbunden
     /// bleibt (z.B. App im Hintergrund weiterhin aktiv), aber nie explizit
