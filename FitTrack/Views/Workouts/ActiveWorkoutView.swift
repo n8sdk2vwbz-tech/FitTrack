@@ -45,6 +45,9 @@ struct ActiveWorkoutView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \WorkoutSession.date, order: .reverse) private var allSessions: [WorkoutSession]
     @ObservedObject private var connectivity = WatchConnectivityManager.shared
+    /// Siehe `StravaSettingsView` - auf welches Plattenschritt-Raster
+    /// Aufwärmgewichte gerundet werden.
+    @AppStorage("warmupWeightIncrementKg") private var warmupWeightIncrementKg: Double = 2.5
 
     @State private var sessionId = UUID().uuidString
     @State private var startDate = Date()
@@ -328,11 +331,12 @@ struct ActiveWorkoutView: View {
         live.wrappedValue.sets.insert(contentsOf: newWarmups, at: 0)
     }
 
-    /// Rundet auf ein in Fitnessstudios übliches Plattenschritt-Raster
-    /// (2,5 kg), damit z.B. nie "18,836 kg" statt "17,5 kg" vorgeschlagen wird.
+    /// Rundet auf ein in Fitnessstudios übliches Plattenschritt-Raster (2,5
+    /// oder 5 kg, einstellbar - nicht jedes Studio hat 2,5-kg-Scheiben),
+    /// damit z.B. nie "18,836 kg" statt "17,5 kg" vorgeschlagen wird.
     private func roundToRealisticWeight(_ weight: Double) -> Double {
         guard weight > 0 else { return 0 }
-        let increment = 2.5
+        let increment = warmupWeightIncrementKg
         return (weight / increment).rounded() * increment
     }
 

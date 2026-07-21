@@ -24,10 +24,26 @@ struct StravaSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var isConnecting = false
     @State private var errorMessage: String?
+    /// Auf welches Raster Aufwärmgewichte gerundet werden (siehe
+    /// `ActiveWorkoutView.roundToRealisticWeight`) - nicht jedes Fitnessstudio
+    /// hat Hantelscheiben in 2,5-kg-Schritten, manche nur in 5-kg-Schritten.
+    @AppStorage("warmupWeightIncrementKg") private var warmupWeightIncrementKg: Double = 2.5
 
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    Picker("Gewichts-Schritte", selection: $warmupWeightIncrementKg) {
+                        Text("2,5 kg").tag(2.5)
+                        Text("5 kg").tag(5.0)
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Training")
+                } footer: {
+                    Text("Auf dieses Raster werden vorgeschlagene Aufwärmgewichte gerundet - praktisch, falls dein Studio keine 2,5-kg-Hantelscheiben hat.")
+                }
+
                 Section {
                     if strava.isConnected {
                         Label("Verbunden mit Strava", systemImage: "checkmark.circle.fill")
@@ -69,7 +85,7 @@ struct StravaSettingsView: View {
                     }
                 }
             }
-            .navigationTitle("Strava")
+            .navigationTitle("Einstellungen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

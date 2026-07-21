@@ -141,11 +141,14 @@ final class StravaManager: NSObject, ObservableObject {
         // auffindbar ist - dieselbe Quelle, aus der auch Apple Fitness seinen
         // Verlauf zeichnet. Ohne UUID (z.B. sehr alte Sessions) bleibt der
         // Rückfall auf eine flache Linie aus dem Durchschnittswert.
-        var heartRateSamples: [HeartRateSample] = []
-        if let uuidString = session.healthKitWorkoutUUID, let uuid = UUID(uuidString: uuidString),
-           let workout = await HealthKitManager.shared.fetchWorkout(uuid: uuid) {
-            heartRateSamples = await HealthKitManager.shared.fetchHeartRateSamples(for: workout)
-        }
+        //
+        // Direkt nach dem Beenden (automatischer Upload) sind die einzelnen
+        // HF-Samples manchmal noch nicht mit dem fertigen HKWorkout verknüpft
+        // - HealthKit braucht dafür einen kurzen Moment, selbst wenn
+        // `finishWorkout()` schon zurückgekehrt ist. Deshalb hier mit ein paar
+        // Sekunden Abstand erneut versuchen, statt sofort auf die flache
+        // Linie zurückzufallen.
+        let heartRateSamples = await Self.fetchHeartRateSamplesWithRetry(healthKitWorkoutUUID: session.healthKitWorkoutUUID)
 
         try await uploadActivityFile(
             name: session.activityName,
@@ -156,6 +159,29 @@ final class StravaManager: NSObject, ObservableObject {
             totalEnergyBurnedKcal: session.totalEnergyBurnedKcal,
             description: nil
         )
+    }
+
+    /// Versucht bis zu 4x (mit steigendem Abstand), die HF-Zeitreihe eines
+    /// Workouts aus HealthKit zu lesen - direkt nach dem Beenden sind das
+    /// zugehörige HKWorkout bzw. dessen Samples manchmal noch kurz nicht
+    /// auffindbar. Gibt ein leeres Array zurück, wenn auch nach allen
+    /// Versuchen nichts gefunden wurde (dann greift die flache
+    /// Rückfall-Linie in `tcxDocument`).
+    private static func fetchHeartRateSamplesWithRetry(healthKitWorkoutUUID: String?) async -> [HeartRateSample] {
+        guard let uuidString = healthKitWorkoutUUID, let uuid = UUID(uuidString: uuidString) else { return [] }
+
+        let delaysSeconds: [UInt64] = [0, 2, 4, 6]
+        for delaySeconds in delaysSeconds {
+            if delaySeconds > 0 {
+                try? await Task.sleep(nanoseconds: delaySeconds * 1_000_000_000)
+            }
+            guard let workout = await HealthKitManager.shared.fetchWorkout(uuid: uuid) else { continue }
+            let samples = await HealthKitManager.shared.fetchHeartRateSamples(for: workout)
+            if !samples.isEmpty {
+                return samples
+            }
+        }
+        return []
     }
 
     /// Lädt ein abgeschlossenes Training als TCX-Datei hoch (statt über den
