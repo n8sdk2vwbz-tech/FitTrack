@@ -56,6 +56,7 @@ struct RemoteMonitoringView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onChange(of: workoutManager.didFinish) { _, finished in
+            print("🔧 RestTimerDebug: RemoteMonitoringView onChange didFinish=\(finished)")
             guard finished else { return }
             path = NavigationPath()
         }

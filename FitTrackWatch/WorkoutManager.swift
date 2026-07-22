@@ -53,6 +53,11 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var reachabilityCancellable: AnyCancellable?
     private var restTimerTriggerCancellable: AnyCancellable?
     private var restTimerTask: Task<Void, Never>?
+    /// Siehe `end(discard:)`/`waitForStoppedWithTimeout` - wird bedient, sobald
+    /// `HKWorkoutSessionDelegate` den Übergang zu `.stopped` meldet (oder nach
+    /// Ablauf des Sicherheits-Timeouts, falls dieser Übergang aus irgendeinem
+    /// Grund ausbleibt).
+    private var stoppedContinuation: CheckedContinuation<Void, Never>?
     /// Einmal pro Training abgefragt (siehe `startWorkout`) statt bei jeder
     /// Satzpause neu, da sich HFmax/Ruhepuls innerhalb einer Einheit nicht ändern.
     /// Dient nur noch als Rückfall-Obergrenze (siehe `restTargetHeartRate`),
@@ -412,37 +417,75 @@ final class WorkoutManager: NSObject, ObservableObject {
     func pause() { session?.pause() }
     func resume() { session?.resume() }
 
+    /// Wartet auf den `HKWorkoutSessionDelegate`-Übergang zu `.stopped` (siehe
+    /// `stoppedContinuation`), höchstens aber `timeoutSeconds` - bleibt dieser
+    /// Übergang aus irgendeinem Grund aus, lieber trotzdem weitermachen als
+    /// für immer zu hängen (siehe `end(discard:)`-Kommentar zur Reihenfolge).
+    private func waitForStoppedWithTimeout(timeoutSeconds: UInt64 = 5) async {
+        guard let session, session.state != .stopped, session.state != .ended else { return }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            self.stoppedContinuation = continuation
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
+                guard let self, let pending = self.stoppedContinuation else { return }
+                self.stoppedContinuation = nil
+                print("🔧 RestTimerDebug: waitForStoppedWithTimeout - Timeout, .stopped nie gemeldet")
+                pending.resume()
+            }
+        }
+    }
+
     /// - Parameter discard: true bei einem Abbruch (statt regulärem Beenden) -
     ///   verwirft die HKWorkoutSession dann per `discardWorkout()`, statt sie
     ///   als echtes HealthKit-Workout zu speichern. Ohne diese Unterscheidung
     ///   landete auch bei einem sofort abgebrochenen Training ein (sehr
     ///   kurzes) Workout in Health, das dann automatisch als eigene Einheit
     ///   importiert wurde, obwohl real gar nicht trainiert wurde.
+    ///
+    ///   Der Verwerfen-Fall ruft `discardWorkout()` bewusst SOFORT auf, ohne
+    ///   auf `.stopped` zu warten: ein Test zeigte, dass die Einheit trotz
+    ///   `discardWorkout()` in Health landete, sobald die Session zuvor schon
+    ///   `.stopped` erreicht hatte - anscheinend beginnt das System ab diesem
+    ///   Zustand bereits mit einer eigenen Finalisierung/Sicherung der Daten,
+    ///   die `discardWorkout()` danach nicht mehr vollständig zurücknehmen
+    ///   kann. Der reguläre Abschluss (kein Verwerfen) wartet weiterhin auf
+    ///   `.stopped`, bevor `endCollection`/`finishWorkout` aufgerufen werden -
+    ///   das ist die von Apple dokumentierte Reihenfolge für ein VOLLSTÄNDIGES
+    ///   Workout und hier unproblematisch, da hier ohnehin gespeichert werden soll.
     func end(discard: Bool = false) {
-        print("🔧 RestTimerDebug: end(discard: \(discard)) aufgerufen")
+        print("🔧 RestTimerDebug: end(discard: \(discard)) aufgerufen, sessionState=\(sessionState.rawValue)")
         pendingRemoteSessionTimeoutTask?.cancel()
         unreachableTimeoutTask?.cancel()
         restTimerTask?.cancel()
         isRestTimerActive = false
-        averageHeartRateAtEnd = builder?.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
-        let end = Date()
-        session?.end()
         timer?.invalidate()
+        let endDate = Date()
 
-        guard let builder else {
-            finishAndSend(healthKitWorkout: nil, endDate: end, discarded: discard)
+        guard let session, let builder else {
+            print("🔧 RestTimerDebug: end() keine Session/Builder - finishAndSend direkt")
+            finishAndSend(healthKitWorkout: nil, endDate: endDate, discarded: discard)
             return
         }
 
         if discard {
+            print("🔧 RestTimerDebug: end() (discard) ruft stopActivity(), discardWorkout(), end() sofort/nacheinander auf")
+            session.stopActivity(with: endDate)
             builder.discardWorkout()
-            finishAndSend(healthKitWorkout: nil, endDate: end, discarded: true)
+            session.end()
+            finishAndSend(healthKitWorkout: nil, endDate: endDate, discarded: true)
             return
         }
 
-        Task {
+        print("🔧 RestTimerDebug: end() ruft session.stopActivity() auf")
+        session.stopActivity(with: endDate)
+
+        Task { @MainActor in
+            await waitForStoppedWithTimeout()
+            print("🔧 RestTimerDebug: end() .stopped erreicht (oder Timeout), sessionState=\(sessionState.rawValue)")
+            averageHeartRateAtEnd = builder.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
+
             do {
-                try await builder.endCollection(at: end)
+                try await builder.endCollection(at: endDate)
                 let workout = try await builder.finishWorkout()
                 // Die zuvor live mitgeschriebenen Werte (`activeEnergyKcal`,
                 // `averageHeartRateAtEnd`) können knapp vor Trainingsende noch
@@ -460,10 +503,13 @@ final class WorkoutManager: NSObject, ObservableObject {
                         averageHeartRateAtEnd = finalHeartRate
                     }
                 }
-                finishAndSend(healthKitWorkout: workout, endDate: end, discarded: false)
+                print("🔧 RestTimerDebug: end() ruft session.end() auf")
+                session.end()
+                finishAndSend(healthKitWorkout: workout, endDate: endDate, discarded: false)
             } catch {
                 print("FitTrack: Fehler beim Beenden der Workout-Session: \(error)")
-                finishAndSend(healthKitWorkout: nil, endDate: end, discarded: false)
+                session.end()
+                finishAndSend(healthKitWorkout: nil, endDate: endDate, discarded: false)
             }
         }
     }
@@ -481,13 +527,18 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     private func finishAndSend(healthKitWorkout: HKWorkout?, endDate: Date, discarded: Bool) {
-        guard let startDate else { return }
+        print("🔧 RestTimerDebug: finishAndSend aufgerufen, startDate=\(startDate?.description ?? "nil"), isRemoteControlled=\(isRemoteControlled), discarded=\(discarded)")
+        guard let startDate else {
+            print("🔧 RestTimerDebug: finishAndSend abgebrochen - startDate nil, didFinish bleibt unverändert!")
+            return
+        }
 
         if isRemoteControlled {
             let finishedSessionId = remoteSessionId ?? ""
             isRemoteControlled = false
             remoteSessionId = nil
             didFinish = true
+            print("🔧 RestTimerDebug: finishAndSend (remote) didFinish=true gesetzt")
             // Bei einem Abbruch wurde nichts gespeichert - es gibt nichts
             // Sinnvolles zu melden, und das iPhone hat seine Ansicht beim
             // Abbrechen ohnehin schon sofort geschlossen, ohne auf eine
@@ -552,13 +603,18 @@ final class WorkoutManager: NSObject, ObservableObject {
 
 extension WorkoutManager: HKWorkoutSessionDelegate {
     nonisolated func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        print("🔧 RestTimerDebug: HKWorkoutSessionDelegate didChangeTo \(toState.rawValue) from \(fromState.rawValue)")
         Task { @MainActor in
             self.sessionState = toState
+            if toState == .stopped, let continuation = self.stoppedContinuation {
+                self.stoppedContinuation = nil
+                continuation.resume()
+            }
         }
     }
 
     nonisolated func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
-        print("FitTrack: Workout-Session Fehler: \(error)")
+        print("🔧 RestTimerDebug: HKWorkoutSessionDelegate didFailWithError \(error)")
     }
 }
 
