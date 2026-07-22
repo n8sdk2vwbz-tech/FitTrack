@@ -37,6 +37,8 @@
 	<string>ReadyLift speichert deine Workouts in Health, damit sie in Health und auf der Apple Watch verfügbar sind.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

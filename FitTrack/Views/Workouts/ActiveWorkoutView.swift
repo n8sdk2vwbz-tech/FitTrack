@@ -46,6 +46,7 @@ struct ActiveWorkoutView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \WorkoutSession.date, order: .reverse) private var allSessions: [WorkoutSession]
     @ObservedObject private var connectivity = WatchConnectivityManager.shared
+    @ObservedObject private var liveActivityRelay = LiveActivityActionRelay.shared
     /// Siehe `StravaSettingsView` - auf welches Plattenschritt-Raster
     /// Aufwärmgewichte gerundet werden.
     @AppStorage("warmupWeightIncrementKg") private var warmupWeightIncrementKg: Double = 2.5
@@ -171,6 +172,7 @@ struct ActiveWorkoutView: View {
                                         // die Satzpausen-Überwachung startet.
                                         connectivity.sendRestTimerTrigger(RestTimerTriggerDTO(sessionId: sessionId))
                                     }
+                                    refreshLiveActivity()
                                 } label: {
                                     Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
                                         .foregroundStyle(set.isCompleted ? .green : .secondary)
@@ -238,6 +240,7 @@ struct ActiveWorkoutView: View {
                 // lässt sie dort sofort die HKWorkoutSession beginnen.
                 _ = await HealthKitManager.shared.startWatchApp(activityType: .traditionalStrengthTraining)
                 sendStartRequest()
+                LiveActivityManager.shared.start(sessionId: sessionId, state: currentLiveActivityState())
             }
             .onChange(of: connectivity.isCounterpartReachable) { _, reachable in
                 // Die Watch war beim ersten Sendeversuch evtl. noch nicht als
@@ -250,6 +253,7 @@ struct ActiveWorkoutView: View {
                 guard let update, update.sessionId == sessionId else { return }
                 latestHeartRate = update.bpm
                 heartRateSamples.append(update.bpm)
+                refreshLiveActivity()
             }
             .onChange(of: connectivity.remoteWorkoutResult) { _, result in
                 guard let result, result.sessionId == sessionId else { return }
@@ -265,10 +269,27 @@ struct ActiveWorkoutView: View {
                 if wasActive, !status.isActive {
                     notifyRestComplete()
                 }
+                refreshLiveActivity()
             }
             .onChange(of: connectivity.remoteSetCompleted) { _, dto in
                 guard let dto, dto.sessionId == sessionId else { return }
-                completeNextSetFromWatch()
+                completeNextPendingSet()
+                refreshLiveActivity()
+            }
+            .onChange(of: liveActivityRelay.completeSetRequested) { _, event in
+                guard event != nil else { return }
+                completeNextPendingSet()
+                // Anders als beim Watch-Button (der die HF-Überwachung direkt
+                // auf der Watch selbst startet) läuft dieser Intent auf dem
+                // iPhone - ohne diesen Trigger würde die Watch nie erfahren,
+                // dass gerade ein Satz abgehakt wurde, und die Pause nie starten.
+                connectivity.sendRestTimerTrigger(RestTimerTriggerDTO(sessionId: sessionId))
+                refreshLiveActivity()
+            }
+            .onChange(of: liveActivityRelay.repsAdjustment) { _, event in
+                guard let event else { return }
+                adjustNextPendingSetReps(by: event.delta)
+                refreshLiveActivity()
             }
             .sheet(isPresented: $showingPicker) {
                 ExercisePickerView { exercise in
@@ -411,19 +432,63 @@ struct ActiveWorkoutView: View {
 
     /// Markiert den nächsten noch offenen Satz als erledigt - ausgelöst durch
     /// den "Satz erledigt"-Button direkt auf der Watch (siehe
-    /// `WorkoutManager.completeSetRemotely` und `RemoteSetCompletedDTO`), da
-    /// die Watch bei einem ferngesteuerten Training selbst keine Übungen/Sätze
-    /// kennt. Dieselbe Reihenfolge (Übung für Übung, darin Satz für Satz) wie
-    /// beim manuellen Abhaken hier in der Liste. Löst bewusst KEINEN erneuten
+    /// `WorkoutManager.completeSetRemotely`/`RemoteSetCompletedDTO`) oder in
+    /// der Live Activity (siehe `CompleteSetLiveActivityIntent`), da beide bei
+    /// einem ferngesteuerten Training selbst keine Übungen/Sätze kennen.
+    /// Dieselbe Reihenfolge (Übung für Übung, darin Satz für Satz) wie beim
+    /// manuellen Abhaken hier in der Liste. Löst bewusst KEINEN erneuten
     /// `sendRestTimerTrigger` aus - die Watch hat ihre HF-Überwachung dafür
     /// bereits selbst gestartet.
-    private func completeNextSetFromWatch() {
+    private func completeNextPendingSet() {
         for exerciseIndex in liveExercises.indices {
             if let setIndex = liveExercises[exerciseIndex].sets.firstIndex(where: { !$0.isCompleted }) {
                 liveExercises[exerciseIndex].sets[setIndex].isCompleted = true
                 return
             }
         }
+    }
+
+    /// Passt die Wiederholungen des nächsten noch offenen Satzes an - vom
+    /// Stepper in der Live Activity ausgelöst (siehe `AdjustNextSetRepsIntent`).
+    /// Nie unter 1 Wdh., damit der Stepper nicht auf 0 oder negativ laufen kann.
+    private func adjustNextPendingSetReps(by delta: Int) {
+        for exerciseIndex in liveExercises.indices {
+            if let setIndex = liveExercises[exerciseIndex].sets.firstIndex(where: { !$0.isCompleted }) {
+                let current = liveExercises[exerciseIndex].sets[setIndex].reps
+                liveExercises[exerciseIndex].sets[setIndex].reps = max(1, current + delta)
+                return
+            }
+        }
+    }
+
+    /// Info zum nächsten noch offenen Satz (Übung für Übung, darin Satz für
+    /// Satz) - Grundlage sowohl für `completeNextPendingSet`/
+    /// `adjustNextPendingSetReps` als auch für die Live-Activity-Anzeige.
+    private var nextPendingSetInfo: (exerciseName: String, reps: Int, weightKg: Double?, isWarmup: Bool)? {
+        for live in liveExercises {
+            if let set = live.sets.first(where: { !$0.isCompleted }) {
+                return (live.exercise.name, set.reps, set.weightKg > 0 ? set.weightKg : nil, set.isWarmup)
+            }
+        }
+        return nil
+    }
+
+    private func currentLiveActivityState() -> RestTimerActivityAttributes.ContentState {
+        let next = nextPendingSetInfo
+        return RestTimerActivityAttributes.ContentState(
+            heartRate: latestHeartRate ?? 0,
+            isResting: isRestTimerActive,
+            restElapsedSeconds: Int(restElapsedSeconds),
+            nextExerciseName: next?.exerciseName ?? "Fertig",
+            nextSetReps: next?.reps ?? 0,
+            nextSetWeightKg: next?.weightKg,
+            nextSetIsWarmup: next?.isWarmup ?? false,
+            hasNextSet: next != nil
+        )
+    }
+
+    private func refreshLiveActivity() {
+        LiveActivityManager.shared.update(currentLiveActivityState())
     }
 
     private func sendStartRequest() {
@@ -439,6 +504,7 @@ struct ActiveWorkoutView: View {
         // landet trotz Abbruch ein (sehr kurzes) Workout in Health und wird
         // von dort automatisch wieder als eigene Einheit importiert.
         connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId, discard: true))
+        LiveActivityManager.shared.end()
         dismiss()
     }
 
@@ -457,6 +523,7 @@ struct ActiveWorkoutView: View {
     private func finishAsync() async {
         isFinishing = true
         connectivity.sendRemoteWorkoutStop(RemoteWorkoutStopDTO(sessionId: sessionId, discard: false))
+        LiveActivityManager.shared.end()
         let maxWaitNanoseconds: UInt64 = 6_000_000_000
         let pollIntervalNanoseconds: UInt64 = 300_000_000
         var waited: UInt64 = 0

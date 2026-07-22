@@ -5,6 +5,15 @@ options:
     iOS: "17.0"
     watchOS: "10.0"
   createIntermediateGroups: true
+  # Ohne das legt XcodeGen für JEDES Target automatisch ein eigenes Scheme an -
+  # für FitTrackWidgets (reine Live-Activity-Extension, kein normales Home-
+  # Screen-Widget) führt ein direktes Ausführen dieses Auto-Schemes zu einem
+  # SpringBoard-Fehler ("Failed to show Widget..."), da es dafür gar keinen
+  # anzeigbaren Widget-Galerie-Eintrag gibt - Live Activities erscheinen nur,
+  # wenn die App selbst `Activity.request(...)` aufruft. Getestet wird über
+  # das reguläre `FitTrack`-Scheme, die beiden unten definierten Schemes
+  # reichen dafür aus.
+  generateAllTargetSchemes: false
 
 settings:
   base:
@@ -30,6 +39,8 @@ targets:
     dependencies:
       - package: FitTrackShared
       - target: FitTrackWatch
+        embed: true
+      - target: FitTrackWidgets
         embed: true
     settings:
       base:
@@ -63,6 +74,24 @@ targets:
         # den Build-Products-Pfad, nicht über diesen "Install"-Schritt.
         SKIP_INSTALL: YES
         WATCHOS_DEPLOYMENT_TARGET: "10.0"
+
+  FitTrackWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: FitTrackWidgets
+    dependencies:
+      - package: FitTrackShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.maximtschitschko.fittrack.widgets
+        INFOPLIST_FILE: FitTrackWidgets/Info.plist
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        # Wie bei FitTrackWatch (siehe dortiger Kommentar): verhindert, dass
+        # die Extension beim Archivieren zusätzlich als eigenständiges
+        # Top-Level-Produkt "installiert" wird.
+        SKIP_INSTALL: YES
 
 schemes:
   FitTrack:

@@ -10,6 +10,7 @@
 		01BC1DBF2BA02B7CC55B0B47 /* TrainingExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */; };
 		049C0691DA205691CB429FAB /* PlanDayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1847D553A83B456E1DAB678B /* PlanDayDetailView.swift */; };
 		071074D98643CE9F97D18EFC /* RemoteMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */; };
+		0CA63845A703B2B7590BA288 /* RestTimerLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95A543674A9459BA38B31C5 /* RestTimerLiveActivityWidget.swift */; };
 		1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1619974B38585E7316A89052 /* IntAdjuster.swift */; };
 		17FBEFF306341CA43C6110A1 /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3899B6473B8E615422764613 /* WorkoutModels.swift */; };
 		1F9024259FBEAF011B328154 /* GeneratePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253C621FEB179B544870220D /* GeneratePlanView.swift */; };
@@ -18,6 +19,7 @@
 		2D0EB1B1E09FBBC721899EB0 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DA26A06ACBA1C92BDC79A5 /* ExercisePickerView.swift */; };
 		391506C250D76DAE722C605A /* EditWorkoutExercisesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF69CEA9B7A8E92755B01942 /* EditWorkoutExercisesView.swift */; };
 		3A0A0387A7AF0EEEDB851E91 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE225AB1AA73FA6D00182295 /* Assets.xcassets */; };
+		40CE68936898E0C3BD651E11 /* FitTrackShared in Frameworks */ = {isa = PBXBuildFile; productRef = 44ECBE7C7ACC5AD562A2F06F /* FitTrackShared */; };
 		40EFC6706807BFF0BC956095 /* FitTrackWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */; };
 		4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AC20A80C5B115A61B5486A /* ImportPlanView.swift */; };
 		42C72242A3B32535E2099818 /* StartWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC07C56F4DA200F356D0DD /* StartWorkoutView.swift */; };
@@ -25,6 +27,7 @@
 		4E6229116D7CD4124AA95CC8 /* StravaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51C498786D866BFB4746637 /* StravaSettingsView.swift */; };
 		4EF3A2D29CF2F5DA824CD674 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0306E9799A335451E8E8BFB7 /* ExerciseDetailView.swift */; };
 		50AA6F5A6AD3BD49781C0595 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BC6733088F129EF3878DAB /* DashboardViewModel.swift */; };
+		50C5574A7F62A3EDF2FF5F0D /* FitTrackWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1AE5D0E0FDA72E8071046C /* FitTrackWidgetsBundle.swift */; };
 		510F5B27547A326017C692E5 /* ExerciseMultiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */; };
 		52AB611343B24A086BA267E5 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E018B0F76B185194F92BAF45 /* WorkoutManager.swift */; };
 		54CA25600D8C4E3DDED69B42 /* StravaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CD9E760E77CB1799A425D2 /* StravaConfig.swift */; };
@@ -39,6 +42,7 @@
 		8F656A22F3C0CDD8A6840CA1 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */; };
 		91868C5F6FA013F36D7A30A3 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */; };
 		95E19AC891342A3DA91DDA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0EB6D74DC3DB7E80C889336A /* Assets.xcassets */; };
+		97AC602E9D4DCEB015EFBBF2 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31C78BA3062D56FF69B13A1 /* LiveActivityManager.swift */; };
 		9D119E9500FEA730A18F2CBE /* HealthKitImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */; };
 		A3F35D906A29EC84B2F80C56 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181778660D0A233239C1AEE8 /* DashboardView.swift */; };
 		ADD4F5235D297E7FDABF56CD /* AIPlanImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF557F93799E9EBA39B0B82 /* AIPlanImport.swift */; };
@@ -50,12 +54,20 @@
 		CEC6B2A2BFC4004002B33864 /* FitTrackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BB4049591E8BE2A35F0775 /* FitTrackApp.swift */; };
 		D0336C783E3511868E960C5A /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6289A152D7376CDD8AB203 /* ExerciseLibraryView.swift */; };
 		D1BB9DC37F22DB93D251D8C2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A21AA286B21409EFB3A531 /* RootView.swift */; };
+		E2B6BBCCF4A8029AC228BAD4 /* FitTrackWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E8DE442F1DEE614523085559 /* LiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2649B249D6D725CD060FAC8 /* LiveWorkoutView.swift */; };
 		F7C9315E9EBE2E1D8DB1EA3E /* AppContainers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69A0EC5EF0BD6DF84B1B3EC /* AppContainers.swift */; };
 		FA38B22E2052C59E3979576F /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7C0EEC0B190B861F3AFBD4 /* ActiveWorkoutView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		D9FD307EC38B6693227233CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 15D5670798217E89438AFDD1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B239314CFF49FAD6F35F99BA;
+			remoteInfo = FitTrackWidgets;
+		};
 		F2B235F23C914D3B31ADFD14 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 15D5670798217E89438AFDD1 /* Project object */;
@@ -66,6 +78,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		758E149A374E099F62CDBE51 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E2B6BBCCF4A8029AC228BAD4 /* FitTrackWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D0409F697B1825A530936EA4 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -95,13 +118,16 @@
 		1CBBCECF0CA54BDD0785ECDE /* FitTrackDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackDebug.entitlements; sourceTree = "<group>"; };
 		1D9AC70A962D5C3725885D51 /* AIPlanImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPlanImportView.swift; sourceTree = "<group>"; };
 		253C621FEB179B544870220D /* GeneratePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratePlanView.swift; sourceTree = "<group>"; };
+		2E1AE5D0E0FDA72E8071046C /* FitTrackWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWidgetsBundle.swift; sourceTree = "<group>"; };
 		309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		32CD9E760E77CB1799A425D2 /* StravaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaConfig.swift; sourceTree = "<group>"; };
 		3482A883AD2BED1FC5148032 /* TrainingPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlansView.swift; sourceTree = "<group>"; };
 		3899B6473B8E615422764613 /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		3DA055D026050AD25ED7A2A5 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
+		3DD45828C99CD50A0752E100 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleHeatmapView.swift; sourceTree = "<group>"; };
 		45AC20A80C5B115A61B5486A /* ImportPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPlanView.swift; sourceTree = "<group>"; };
+		4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FitTrackWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5302754DE0308CEBF15F484A /* StravaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaManager.swift; sourceTree = "<group>"; };
 		55458F2FF281E4BF301C4BB3 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrack.entitlements; sourceTree = "<group>"; };
@@ -125,9 +151,11 @@
 		CE225AB1AA73FA6D00182295 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CF69CEA9B7A8E92755B01942 /* EditWorkoutExercisesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutExercisesView.swift; sourceTree = "<group>"; };
 		D083DF95D29058EA41EA0180 /* HealthKitImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitImportService.swift; sourceTree = "<group>"; };
+		D31C78BA3062D56FF69B13A1 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		D6CD44875CFCB4FF87CAB09A /* FitTrackWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitTrackWatchApp.swift; sourceTree = "<group>"; };
 		E018B0F76B185194F92BAF45 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		F8F50216CAB8ACCF4AB7F0DB /* FitTrackWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrackWatch.entitlements; sourceTree = "<group>"; };
+		F95A543674A9459BA38B31C5 /* RestTimerLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerLiveActivityWidget.swift; sourceTree = "<group>"; };
 		FC0FE9046C5C0D8419CAAB33 /* TrainingExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingExportView.swift; sourceTree = "<group>"; };
 		FCF557F93799E9EBA39B0B82 /* AIPlanImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPlanImport.swift; sourceTree = "<group>"; };
 		FE8F6F6A0A27D37FD72867AF /* RemoteMonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteMonitoringView.swift; sourceTree = "<group>"; };
@@ -150,9 +178,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA640A944C5CD3EB167C17EC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40CE68936898E0C3BD651E11 /* FitTrackShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0658DB32358642726DFF5585 /* FitTrackWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				2E1AE5D0E0FDA72E8071046C /* FitTrackWidgetsBundle.swift */,
+				3DD45828C99CD50A0752E100 /* Info.plist */,
+				F95A543674A9459BA38B31C5 /* RestTimerLiveActivityWidget.swift */,
+			);
+			path = FitTrackWidgets;
+			sourceTree = "<group>";
+		};
 		2A5A74B90772D185C84E5E68 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -170,6 +216,7 @@
 			children = (
 				9FB3C778B1465DF47506BDE5 /* FitTrack */,
 				AB5EE52A1C2D7A50F7C401F4 /* FitTrackWatch */,
+				0658DB32358642726DFF5585 /* FitTrackWidgets */,
 				CDBE3E6472C52E0B9B97AE9C /* Packages */,
 				AEA38702B705DAEA72C53EAD /* Products */,
 			);
@@ -306,6 +353,7 @@
 			children = (
 				053108AC8BBB9B65EBA44741 /* FitTrack.app */,
 				B8111A1D48406ECDA1841684 /* FitTrackWatch.app */,
+				4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -330,6 +378,7 @@
 			isa = PBXGroup;
 			children = (
 				309F50EC8FF03F021F159CB3 /* KeychainHelper.swift */,
+				D31C78BA3062D56FF69B13A1 /* LiveActivityManager.swift */,
 				32CD9E760E77CB1799A425D2 /* StravaConfig.swift */,
 				5302754DE0308CEBF15F484A /* StravaManager.swift */,
 			);
@@ -377,6 +426,25 @@
 			productReference = B8111A1D48406ECDA1841684 /* FitTrackWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B239314CFF49FAD6F35F99BA /* FitTrackWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8819C40C05DC7DE7C20349E /* Build configuration list for PBXNativeTarget "FitTrackWidgets" */;
+			buildPhases = (
+				460569E2C09E3D87C0ABD7DA /* Sources */,
+				DA640A944C5CD3EB167C17EC /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FitTrackWidgets;
+			packageProductDependencies = (
+				44ECBE7C7ACC5AD562A2F06F /* FitTrackShared */,
+			);
+			productName = FitTrackWidgets;
+			productReference = 4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		D255A6C7D5D446F750DA7FED /* FitTrack */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D3B4A6B7657E5CB7FD38F812 /* Build configuration list for PBXNativeTarget "FitTrack" */;
@@ -384,12 +452,14 @@
 				522D69FECDF3C6955ABB05AD /* Sources */,
 				ACC500B6C58C6C6D9B7163C5 /* Resources */,
 				AF2C9E31E7A4151E26C25FD4 /* Frameworks */,
+				758E149A374E099F62CDBE51 /* Embed Foundation Extensions */,
 				D0409F697B1825A530936EA4 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				5E029840DCBFEAFC2324DBC8 /* PBXTargetDependency */,
+				7681D0A829EA2572043EE28C /* PBXTargetDependency */,
 			);
 			name = FitTrack;
 			packageProductDependencies = (
@@ -409,6 +479,10 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					563C6831FBBB8C2021E9C8FB = {
+						DevelopmentTeam = 8936F2R3FF;
+						ProvisioningStyle = Automatic;
+					};
+					B239314CFF49FAD6F35F99BA = {
 						DevelopmentTeam = 8936F2R3FF;
 						ProvisioningStyle = Automatic;
 					};
@@ -437,6 +511,7 @@
 			targets = (
 				D255A6C7D5D446F750DA7FED /* FitTrack */,
 				563C6831FBBB8C2021E9C8FB /* FitTrackWatch */,
+				B239314CFF49FAD6F35F99BA /* FitTrackWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -461,6 +536,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		460569E2C09E3D87C0ABD7DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				50C5574A7F62A3EDF2FF5F0D /* FitTrackWidgetsBundle.swift in Sources */,
+				0CA63845A703B2B7590BA288 /* RestTimerLiveActivityWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		522D69FECDF3C6955ABB05AD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -483,6 +567,7 @@
 				4119BBECF5C1FCEE9462EBA8 /* ImportPlanView.swift in Sources */,
 				1029591CC256D329044E7B92 /* IntAdjuster.swift in Sources */,
 				91868C5F6FA013F36D7A30A3 /* KeychainHelper.swift in Sources */,
+				97AC602E9D4DCEB015EFBBF2 /* LiveActivityManager.swift in Sources */,
 				29380A4F5004204710E76075 /* LogWorkoutView.swift in Sources */,
 				5BB359E6FCE6EF86772335C3 /* MuscleHeatmapView.swift in Sources */,
 				2BC5E769566E58DE20AA8907 /* NoAccessoryTextField.swift in Sources */,
@@ -524,6 +609,11 @@
 			target = 563C6831FBBB8C2021E9C8FB /* FitTrackWatch */;
 			targetProxy = F2B235F23C914D3B31ADFD14 /* PBXContainerItemProxy */;
 		};
+		7681D0A829EA2572043EE28C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B239314CFF49FAD6F35F99BA /* FitTrackWidgets */;
+			targetProxy = D9FD307EC38B6693227233CD /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -541,6 +631,40 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		395EC1033F28C08022BD0EEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitTrackWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		4C1D1CE3EC9E7EB06AB377B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitTrackWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -745,6 +869,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		B8819C40C05DC7DE7C20349E /* Build configuration list for PBXNativeTarget "FitTrackWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				395EC1033F28C08022BD0EEF /* Debug */,
+				4C1D1CE3EC9E7EB06AB377B1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		D3B4A6B7657E5CB7FD38F812 /* Build configuration list for PBXNativeTarget "FitTrack" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -765,6 +898,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		143C1BBE66AC584AED8FBD90 /* FitTrackShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FitTrackShared;
+		};
+		44ECBE7C7ACC5AD562A2F06F /* FitTrackShared */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FitTrackShared;
 		};
