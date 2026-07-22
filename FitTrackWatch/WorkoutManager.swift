@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import Combine
+import WatchKit
 import FitTrackShared
 
 private struct DraftSet {
@@ -31,6 +32,11 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// (die Watch dient dann nur als Sensor für die Herzfrequenz).
     @Published var isRemoteControlled: Bool = false
     @Published var remoteActivityName: String?
+    /// Ob gerade auf die Erholung nach einem Satz gewartet wird (siehe
+    /// `startRestMonitoringIfNeeded`) - treibt die Anzeige in
+    /// `LiveWorkoutView`/`RemoteMonitoringView`.
+    @Published var isRestTimerActive: Bool = false
+    @Published var restElapsedSeconds: TimeInterval = 0
 
     var planDay: PlanDayDTO?
 
@@ -45,6 +51,29 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var pendingRemoteSessionTimeoutTask: Task<Void, Never>?
     private var unreachableTimeoutTask: Task<Void, Never>?
     private var reachabilityCancellable: AnyCancellable?
+    private var restTimerTriggerCancellable: AnyCancellable?
+    private var restTimerTask: Task<Void, Never>?
+    /// Einmal pro Training abgefragt (siehe `startWorkout`) statt bei jeder
+    /// Satzpause neu, da sich HFmax/Ruhepuls innerhalb einer Einheit nicht ändern.
+    /// Dient nur noch als Rückfall-Obergrenze (siehe `restTargetHeartRate`),
+    /// solange für den gerade beendeten Satz noch keine eigene Spitzen-HF
+    /// vorliegt (z.B. beim allerersten Satz eines Trainings).
+    private var cachedMaxHeartRate: Double?
+    private var cachedRestingHeartRate: Double?
+    /// Höchste seit dem Ende der letzten Pause gemessene Herzfrequenz - bildet
+    /// die Obergrenze der HFR-Berechnung für die kommende Pause (siehe
+    /// `restTargetHeartRate`). Ein pauschaler alters-geschätzter HFmax-Wert
+    /// setzt die Obergrenze unabhängig davon, wie anstrengend der tatsächlich
+    /// gerade absolvierte Satz war - ein leichter Aufwärmsatz und ein
+    /// maximaler Arbeitssatz hätten so denselben Erholungs-Zielwert, obwohl
+    /// nur Letzterer die Herzfrequenz wirklich in Richtung HFmax treibt.
+    private var currentSetPeakHeartRate: Double = 0
+    /// Schnappschuss von `currentSetPeakHeartRate` beim Start der aktuell
+    /// laufenden Pause - `currentSetPeakHeartRate` wird sofort danach
+    /// zurückgesetzt, um schon während der Pause die Spitze des nächsten
+    /// Satzes zu erfassen, der Zielwert dieser Pause soll sich aber nicht
+    /// nachträglich mitverändern.
+    private var restPeakHeartRateSnapshot: Double?
 
     /// Wie lange das iPhone nicht erreichbar sein darf, bevor eine
     /// ferngesteuerte Session selbst beendet wird (siehe `handleReachabilityChange`).
@@ -72,6 +101,32 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// dabei die Herzfrequenz-Aufzeichnung mitten im Training gestoppt.
     private let maxRemoteSessionDuration: TimeInterval = 3 * 60 * 60
 
+    /// Anteil der Herzfrequenzreserve (Karvonen: Ruhepuls + Anteil ×
+    /// (HFmax − Ruhepuls)), ab dessen Erreichen der nächste Satz als sinnvoll
+    /// startbar gilt - Richtwert 50-60% aus der Literatur zu HF-basierten
+    /// Satzpausen, hier die Mitte davon.
+    private let restTargetHRRFraction: Double = 0.55
+    /// Mindestwartezeit, bevor überhaupt auf die Herzfrequenz geschaut wird -
+    /// ohne das könnte z.B. nach einem sehr leichten Satz sofort "bereit"
+    /// gemeldet werden, obwohl gerade erst aufgehört wurde.
+    private let restMinWaitSeconds: TimeInterval = 20
+    /// Obergrenze, falls die Herzfrequenz aus irgendeinem Grund (z.B.
+    /// Sensor-Aussetzer) nicht rechtzeitig auf den Zielwert fällt - lieber
+    /// nach dieser Zeit trotzdem erinnern, als den Nutzer unbegrenzt warten
+    /// zu lassen.
+    private let restMaxWaitSeconds: TimeInterval = 240
+    /// Rückfall-Wartezeit, falls HFmax/Ruhepuls gar nicht ermittelbar sind
+    /// (z.B. kein Geburtsdatum in Health hinterlegt) - angelehnt an die
+    /// klassische Hypertrophie-Satzpausen-Empfehlung (30-90s).
+    private let restFallbackSeconds: TimeInterval = 90
+    /// Schwelle (Anteil der Herzfrequenzreserve), unter der ein Satz als kaum
+    /// anstrengend gilt (siehe `isLowIntensitySet`) - z.B. ein Aufwärmsatz mit
+    /// wenig Gewicht. Realer beobachteter Fall: Ruhepuls 57.5, Satz-Spitze nur
+    /// 81 (≈18% HFR) ergab einen Zielwert von 70.4 - niedriger, als die HF
+    /// kurz danach durch normale Schwankung ohnehin lag (82-92), die Pause
+    /// wäre so bis zu 4 Minuten für einen fast anstrengungslosen Satz gelaufen.
+    private let restLowIntensityHRRFraction: Double = 0.20
+
     var currentPlanItem: PlanItemDTO? {
         guard let planDay, planDay.items.indices.contains(currentExerciseIndex) else { return nil }
         return planDay.items[currentExerciseIndex]
@@ -90,6 +145,22 @@ final class WorkoutManager: NSObject, ObservableObject {
             .sink { [weak self] reachable in
                 Task { @MainActor in
                     self?.handleReachabilityChange(reachable)
+                }
+            }
+        // Beim ferngesteuerten Training (vom iPhone gestartet) loggt die
+        // Watch selbst keine Sätze - ohne dieses Signal vom iPhone wüsste sie
+        // nie, wann ein Satz abgeschlossen wurde, um die Satzpausen-
+        // Überwachung zu starten (siehe `startRestMonitoringIfNeeded`).
+        restTimerTriggerCancellable = WatchConnectivityManager.shared.$restTimerTrigger
+            .compactMap { $0 }
+            .sink { [weak self] dto in
+                Task { @MainActor in
+                    print("🔧 RestTimerDebug: Trigger-Sink ausgelöst, dto.sessionId=\(dto.sessionId), remoteSessionId=\(self?.remoteSessionId ?? "nil")")
+                    guard self?.remoteSessionId == dto.sessionId else {
+                        print("🔧 RestTimerDebug: Trigger verworfen - sessionId stimmt nicht überein")
+                        return
+                    }
+                    self?.startRestMonitoringIfNeeded()
                 }
             }
     }
@@ -112,6 +183,8 @@ final class WorkoutManager: NSObject, ObservableObject {
         didFinish = false
         heartRate = 0
         activeEnergyKcal = 0
+        currentSetPeakHeartRate = 0
+        restPeakHeartRateSnapshot = nil
 
         let configuration = HKWorkoutConfiguration()
         configuration.activityType = activityType
@@ -132,8 +205,24 @@ final class WorkoutManager: NSObject, ObservableObject {
             session.startActivity(with: start)
             builder.beginCollection(withStart: start) { _, _ in }
             startTimer()
+            cacheHeartRateBaselineIfNeeded()
         } catch {
             print("FitTrack: Workout-Session konnte nicht gestartet werden: \(error)")
+        }
+    }
+
+    /// Einmal pro Training abgefragt statt bei jeder Satzpause neu (siehe
+    /// `cachedMaxHeartRate`/`cachedRestingHeartRate`). Läuft im Hintergrund -
+    /// das Training soll nicht auf diese (u.U. mehrere Sekunden dauernde)
+    /// HealthKit-Abfrage warten müssen, um zu starten.
+    private func cacheHeartRateBaselineIfNeeded() {
+        Task { [weak self] in
+            let maxHR = HealthKitManager.shared.fetchEstimatedMaxHeartRate()
+            let restingHR = await HealthKitManager.shared.fetchLatestRestingHeartRate()
+            await MainActor.run {
+                self?.cachedMaxHeartRate = maxHR
+                self?.cachedRestingHeartRate = restingHR
+            }
         }
     }
 
@@ -163,6 +252,20 @@ final class WorkoutManager: NSObject, ObservableObject {
         isRemoteControlled = true
         remoteActivityName = activityName
         startWorkout(activityType: activityType, planDay: nil)
+    }
+
+    /// Direkt auf der Watch ausgelöstes Satz-Abhaken (siehe `RemoteMonitoringView`)
+    /// - erspart bei einem ferngesteuerten Training das Umschalten aufs iPhone.
+    /// Die Watch kennt hier keine Übungen/Sätze (siehe `startRemoteMonitoring`,
+    /// `planDay: nil`), meldet dem iPhone deshalb nur "irgendein Satz fertig"
+    /// - das iPhone markiert dort selbst den nächsten offenen Satz (siehe
+    /// `ActiveWorkoutView.completeNextSetFromWatch`). Startet die HF-Überwachung
+    /// direkt selbst, statt auf den Rückweg über `restTimerTrigger` zu warten -
+    /// die Watch misst die Herzfrequenz ohnehin selbst.
+    func completeSetRemotely() {
+        guard isRemoteControlled, let remoteSessionId else { return }
+        WatchConnectivityManager.shared.sendRemoteSetCompleted(RemoteSetCompletedDTO(sessionId: remoteSessionId))
+        startRestMonitoringIfNeeded()
     }
 
     /// Wird von `WatchAppDelegate.handle(_:)` aufgerufen, sobald das iPhone die
@@ -202,6 +305,102 @@ final class WorkoutManager: NSObject, ObservableObject {
     func logSet(reps: Int, weightKg: Double) {
         loggedSets[currentExerciseIndex, default: []].append(DraftSet(reps: reps, weightKg: weightKg))
         currentSetCount = loggedSets[currentExerciseIndex]?.count ?? 0
+        startRestMonitoringIfNeeded()
+    }
+
+    /// Startet die HF-basierte Satzpausen-Überwachung: sobald die
+    /// Herzfrequenz auf einen Erholungs-Zielwert fällt (Karvonen-Formel,
+    /// 50-60% der Herzfrequenzreserve laut Literatur zu satzweiser Erholung),
+    /// vibriert die Watch. Als Obergrenze der Reserve dient bevorzugt die im
+    /// gerade beendeten Satz tatsächlich erreichte Spitzen-HF (siehe
+    /// `currentSetPeakHeartRate`) statt eines pauschalen alters-geschätzten
+    /// HFmax - ein leichter Satz soll keinen ebenso hohen Erholungs-Zielwert
+    /// verlangen wie ein wirklich maximaler. Ohne verlässliche Ruhepuls-Basis
+    /// (z.B. kein Geburtsdatum in Health) wird stattdessen nach
+    /// `restFallbackSeconds` erinnert. Läuft für lokal geloggte (siehe
+    /// `logSet`) UND ferngesteuerte (siehe `restTimerTriggerCancellable`)
+    /// Trainings gleich ab.
+    func startRestMonitoringIfNeeded() {
+        guard WatchConnectivityManager.shared.restTimerEnabled else {
+            print("🔧 RestTimerDebug: startRestMonitoringIfNeeded abgebrochen - restTimerEnabled=false")
+            return
+        }
+        // Schnappschuss VOR dem Zurücksetzen sichern (siehe
+        // `restPeakHeartRateSnapshot`-Kommentar) - ab jetzt sammelt
+        // `currentSetPeakHeartRate` bereits die Spitze des nächsten Satzes.
+        restPeakHeartRateSnapshot = currentSetPeakHeartRate > 0 ? currentSetPeakHeartRate : nil
+        currentSetPeakHeartRate = 0
+        print("🔧 RestTimerDebug: startRestMonitoringIfNeeded startet Überwachung (maxHR=\(cachedMaxHeartRate?.description ?? "nil"), restingHR=\(cachedRestingHeartRate?.description ?? "nil"), setPeakHR=\(restPeakHeartRateSnapshot?.description ?? "nil"), targetHR=\(restTargetHeartRate?.description ?? "nil"))")
+        restTimerTask?.cancel()
+        isRestTimerActive = true
+        restElapsedSeconds = 0
+        let startedAt = Date()
+        sendRestTimerStatusIfRemote()
+
+        restTimerTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard !Task.isCancelled, let self else { return }
+                self.restElapsedSeconds = Date().timeIntervalSince(startedAt)
+                print("🔧 RestTimerDebug: Tick t=\(Int(self.restElapsedSeconds))s heartRate=\(self.heartRate) targetHR=\(self.restTargetHeartRate?.description ?? "nil") lowIntensity=\(self.isLowIntensitySet)")
+                if self.isReadyForNextSet() {
+                    self.completeRestMonitoring()
+                    return
+                }
+                self.sendRestTimerStatusIfRemote()
+            }
+        }
+    }
+
+    /// Nur bei ferngesteuerten Trainings relevant - `ActiveWorkoutView` auf
+    /// dem iPhone kennt die Herzfrequenz sonst gar nicht selbst.
+    private func sendRestTimerStatusIfRemote() {
+        guard isRemoteControlled, let remoteSessionId else { return }
+        WatchConnectivityManager.shared.sendRestTimerStatus(
+            RestTimerStatusDTO(sessionId: remoteSessionId, isActive: isRestTimerActive, elapsedSeconds: restElapsedSeconds)
+        )
+    }
+
+    private var restTargetHeartRate: Double? {
+        guard let restingHR = cachedRestingHeartRate else { return nil }
+        // Bevorzugt die tatsächliche Spitzen-HF des gerade beendeten Satzes
+        // als Obergrenze - nur falls die (noch) nicht vorliegt (z.B. beim
+        // allerersten Satz, bevor der erste HF-Sample eintraf), Rückfall auf
+        // den pauschalen alters-geschätzten Wert.
+        if let peak = restPeakHeartRateSnapshot, peak > restingHR {
+            return restingHR + restTargetHRRFraction * (peak - restingHR)
+        }
+        guard let maxHR = cachedMaxHeartRate, maxHR > restingHR else { return nil }
+        return restingHR + restTargetHRRFraction * (maxHR - restingHR)
+    }
+
+    /// Siehe `restLowIntensityHRRFraction`-Kommentar: stieg die HF während des
+    /// Satzes kaum über den Ruhepuls, war der Satz kaum anstrengend genug, um
+    /// einen aussagekräftigen HF-Zielwert daraus abzuleiten - die Erholung
+    /// gilt dann bereits nach der Mindestwartezeit als ausreichend.
+    private var isLowIntensitySet: Bool {
+        guard let peak = restPeakHeartRateSnapshot,
+              let restingHR = cachedRestingHeartRate,
+              let maxHR = cachedMaxHeartRate,
+              maxHR > restingHR else { return false }
+        return (peak - restingHR) / (maxHR - restingHR) < restLowIntensityHRRFraction
+    }
+
+    private func isReadyForNextSet() -> Bool {
+        guard restElapsedSeconds >= restMinWaitSeconds else { return false }
+        if isLowIntensitySet { return true }
+        guard let target = restTargetHeartRate else {
+            return restElapsedSeconds >= restFallbackSeconds
+        }
+        if heartRate > 0, heartRate <= target { return true }
+        return restElapsedSeconds >= restMaxWaitSeconds
+    }
+
+    private func completeRestMonitoring() {
+        isRestTimerActive = false
+        restTimerTask = nil
+        WKInterfaceDevice.current().play(.notification)
+        sendRestTimerStatusIfRemote()
     }
 
     func nextExercise() {
@@ -220,8 +419,11 @@ final class WorkoutManager: NSObject, ObservableObject {
     ///   kurzes) Workout in Health, das dann automatisch als eigene Einheit
     ///   importiert wurde, obwohl real gar nicht trainiert wurde.
     func end(discard: Bool = false) {
+        print("🔧 RestTimerDebug: end(discard: \(discard)) aufgerufen")
         pendingRemoteSessionTimeoutTask?.cancel()
         unreachableTimeoutTask?.cancel()
+        restTimerTask?.cancel()
+        isRestTimerActive = false
         averageHeartRateAtEnd = builder?.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
         let end = Date()
         session?.end()
@@ -335,6 +537,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         if statistics.quantityType == HKQuantityType(.heartRate) {
             if let value = statistics.mostRecentQuantity()?.doubleValue(for: HKUnit.count().unitDivided(by: .minute())) {
                 heartRate = value
+                currentSetPeakHeartRate = max(currentSetPeakHeartRate, value)
                 if isRemoteControlled, let sessionId = remoteSessionId {
                     WatchConnectivityManager.shared.sendHeartRateUpdate(HeartRateUpdateDTO(sessionId: sessionId, bpm: value))
                 }

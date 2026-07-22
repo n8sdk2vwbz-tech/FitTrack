@@ -16,6 +16,12 @@ struct LiveWorkoutView: View {
                     metric(value: "\(Int(workoutManager.activeEnergyKcal))", label: "kcal")
                 }
 
+                if workoutManager.isRestTimerActive {
+                    Label("Pause: \(Int(workoutManager.restElapsedSeconds))s", systemImage: "heart.text.square")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+
                 if let item = workoutManager.currentPlanItem {
                     Divider()
                     VStack(spacing: 4) {

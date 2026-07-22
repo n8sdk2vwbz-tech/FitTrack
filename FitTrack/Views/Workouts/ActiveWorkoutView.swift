@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 import FitTrackShared
 
 private struct LiveSet: Identifiable {
@@ -48,6 +49,8 @@ struct ActiveWorkoutView: View {
     /// Siehe `StravaSettingsView` - auf welches Plattenschritt-Raster
     /// Aufwärmgewichte gerundet werden.
     @AppStorage("warmupWeightIncrementKg") private var warmupWeightIncrementKg: Double = 2.5
+    /// Siehe `StravaSettingsView` - ob der HF-basierte Satzpausen-Timer aktiv ist.
+    @AppStorage("restTimerEnabled") private var restTimerEnabled = false
 
     @State private var sessionId = UUID().uuidString
     @State private var startDate = Date()
@@ -63,6 +66,8 @@ struct ActiveWorkoutView: View {
     @State private var remoteHealthKitUUID: String?
     @State private var startRequestAttempts = 0
     @State private var completedSession: WorkoutSession?
+    @State private var isRestTimerActive = false
+    @State private var restElapsedSeconds: Double = 0
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -97,6 +102,15 @@ struct ActiveWorkoutView: View {
                             Text(connectivity.isCounterpartReachable ? "Wird verbunden…" : "Watch-App öffnen zum Verbinden")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                        }
+                    }
+                    if isRestTimerActive {
+                        HStack {
+                            Label("Pause", systemImage: "heart.text.square")
+                            Spacer()
+                            Text("\(Int(restElapsedSeconds))s")
+                                .monospacedDigit()
+                                .foregroundStyle(.orange)
                         }
                     }
                 }
@@ -150,6 +164,13 @@ struct ActiveWorkoutView: View {
                             HStack(spacing: 6) {
                                 Button {
                                     set.isCompleted.toggle()
+                                    if set.isCompleted {
+                                        // Watch misst die Herzfrequenz - sie
+                                        // (nicht das iPhone) entscheidet anhand
+                                        // der synchronisierten Einstellung, ob
+                                        // die Satzpausen-Überwachung startet.
+                                        connectivity.sendRestTimerTrigger(RestTimerTriggerDTO(sessionId: sessionId))
+                                    }
                                 } label: {
                                     Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
                                         .foregroundStyle(set.isCompleted ? .green : .secondary)
@@ -235,6 +256,19 @@ struct ActiveWorkoutView: View {
                 remoteEnergyKcal = result.totalEnergyBurnedKcal
                 remoteAvgHeartRate = result.averageHeartRate
                 remoteHealthKitUUID = result.healthKitWorkoutUUID
+            }
+            .onChange(of: connectivity.restTimerStatus) { _, status in
+                guard let status, status.sessionId == sessionId else { return }
+                let wasActive = isRestTimerActive
+                isRestTimerActive = status.isActive
+                restElapsedSeconds = status.elapsedSeconds
+                if wasActive, !status.isActive {
+                    notifyRestComplete()
+                }
+            }
+            .onChange(of: connectivity.remoteSetCompleted) { _, dto in
+                guard let dto, dto.sessionId == sessionId else { return }
+                completeNextSetFromWatch()
             }
             .sheet(isPresented: $showingPicker) {
                 ExercisePickerView { exercise in
@@ -362,9 +396,40 @@ struct ActiveWorkoutView: View {
     /// erneut aufgerufen, sobald die Watch erreichbar wird (falls der erste
     /// Versuch zu früh nach dem App-Start kam), aber nur solange noch keine
     /// Herzfrequenz eingetroffen ist und mit einer Obergrenze an Versuchen.
+    /// Zusätzlich zur Watch-Vibration eine kurze Mitteilung am iPhone, falls
+    /// der Nutzer gerade dort statt auf die Uhr schaut - die App muss dafür
+    /// nicht im Vordergrund sein (Berechtigung wird still im Hintergrund
+    /// abgefragt, siehe `RootView`).
+    private func notifyRestComplete() {
+        let content = UNMutableNotificationContent()
+        content.title = "Bereit für den nächsten Satz"
+        content.body = "Deine Herzfrequenz hat sich erholt."
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: "rest-timer-\(sessionId)-\(Date().timeIntervalSince1970)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    /// Markiert den nächsten noch offenen Satz als erledigt - ausgelöst durch
+    /// den "Satz erledigt"-Button direkt auf der Watch (siehe
+    /// `WorkoutManager.completeSetRemotely` und `RemoteSetCompletedDTO`), da
+    /// die Watch bei einem ferngesteuerten Training selbst keine Übungen/Sätze
+    /// kennt. Dieselbe Reihenfolge (Übung für Übung, darin Satz für Satz) wie
+    /// beim manuellen Abhaken hier in der Liste. Löst bewusst KEINEN erneuten
+    /// `sendRestTimerTrigger` aus - die Watch hat ihre HF-Überwachung dafür
+    /// bereits selbst gestartet.
+    private func completeNextSetFromWatch() {
+        for exerciseIndex in liveExercises.indices {
+            if let setIndex = liveExercises[exerciseIndex].sets.firstIndex(where: { !$0.isCompleted }) {
+                liveExercises[exerciseIndex].sets[setIndex].isCompleted = true
+                return
+            }
+        }
+    }
+
     private func sendStartRequest() {
         guard latestHeartRate == nil, startRequestAttempts < 5 else { return }
-        connectivity.sendRemoteWorkoutStart(RemoteWorkoutStartDTO(sessionId: sessionId, activityName: planDay?.name ?? "Training"))
+        print("🔧 RestTimerDebug: sendStartRequest Versuch #\(startRequestAttempts + 1), restTimerEnabled=\(restTimerEnabled), reachable=\(connectivity.isCounterpartReachable)")
+        connectivity.sendRemoteWorkoutStart(RemoteWorkoutStartDTO(sessionId: sessionId, activityName: planDay?.name ?? "Training", restTimerEnabled: restTimerEnabled))
         startRequestAttempts += 1
     }
 

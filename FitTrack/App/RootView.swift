@@ -1,12 +1,18 @@
 import SwiftUI
 import SwiftData
 import HealthKit
+import UserNotifications
 import FitTrackShared
 
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var connectivity = WatchConnectivityManager.shared
     @State private var pendingSharedPlan: SharedPlanDTO?
+    /// Muss der Watch nach der Aktivierung einmalig mitgeteilt werden (siehe
+    /// `WatchConnectivityManager.sendRestTimerPreference`), sonst kennt ein
+    /// direkt auf der Watch gestartetes Training die Einstellung nicht, bevor
+    /// sie das erste Mal in den Einstellungen geändert wurde.
+    @AppStorage("restTimerEnabled") private var restTimerEnabled = false
 
     var body: some View {
         TabView {
@@ -25,7 +31,12 @@ struct RootView: View {
         }
         .task {
             connectivity.activate()
+            connectivity.sendRestTimerPreference(restTimerEnabled)
             try? await HealthKitManager.shared.requestAuthorization()
+            // Für die Satzpausen-Mitteilung (siehe `ActiveWorkoutView.
+            // notifyRestComplete`) - still im Hintergrund angefragt, kein
+            // Abbruch der App falls abgelehnt.
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
         }
         .onChange(of: connectivity.receivedCompletedWorkout) { _, newValue in
             guard let dto = newValue else { return }

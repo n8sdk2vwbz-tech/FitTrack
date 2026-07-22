@@ -58,6 +58,7 @@ struct FitTrackWatchApp: App {
             }
             .onChange(of: connectivity.remoteStopRequest) { _, request in
                 guard let request else { return }
+                print("🔧 RestTimerDebug: remoteStopRequest onChange sessionId=\(request.sessionId), isRemoteControlled=\(workoutManager.isRemoteControlled)")
                 guard workoutManager.isRemoteControlled else { return }
                 workoutManager.end(discard: request.discard)
             }

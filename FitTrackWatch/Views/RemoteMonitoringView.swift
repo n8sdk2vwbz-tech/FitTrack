@@ -11,19 +11,10 @@ struct RemoteMonitoringView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 10) {
-                Image(systemName: "iphone.gen3.radiowaves.left.and.right")
-                    .font(.title2)
-                    .foregroundStyle(.blue)
-
-                Text(workoutManager.remoteActivityName ?? "Training")
-                    .font(.headline)
-                Text("Gesteuert vom iPhone")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-
-                Divider()
-
+            // Puls und Pausen-Timer bewusst als Erstes, ohne einleitendes Icon/
+            // Beschriftung davor - sollen ohne Scrollen sofort sichtbar sein,
+            // das ist die während des Trainings wichtigste Information.
+            VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     Text("\(Int(workoutManager.heartRate))")
                         .font(.system(.largeTitle, design: .rounded))
@@ -33,8 +24,25 @@ struct RemoteMonitoringView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                if workoutManager.isRestTimerActive {
+                    Label("\(Int(workoutManager.restElapsedSeconds))s Pause", systemImage: "heart.text.square")
+                        .font(.headline)
+                        .foregroundStyle(.orange)
+                }
+
+                Button {
+                    workoutManager.completeSetRemotely()
+                } label: {
+                    Label("Satz erledigt", systemImage: "checkmark.circle.fill")
+                }
+                .tint(.green)
+
+                Text(workoutManager.remoteActivityName ?? "Training")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
                 Text("\(Int(workoutManager.activeEnergyKcal)) kcal")
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
 
                 Button(role: .destructive) {
@@ -42,7 +50,7 @@ struct RemoteMonitoringView: View {
                 } label: {
                     Label("Beenden", systemImage: "stop.fill")
                 }
-                .font(.caption)
+                .font(.caption2)
             }
             .padding(.horizontal, 4)
         }

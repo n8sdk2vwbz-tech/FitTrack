@@ -100,10 +100,19 @@ public struct CompletedWorkoutDTO: Codable, Identifiable, Hashable {
 public struct RemoteWorkoutStartDTO: Codable, Hashable {
     public let sessionId: String
     public let activityName: String
+    /// Aktueller Stand der Satzpausen-Timer-Einstellung (siehe
+    /// `WatchConnectivityManager.restTimerEnabled`) - wird hier zusätzlich zur
+    /// separat per `updateApplicationContext` synchronisierten Einstellung
+    /// mitgeschickt, da diese Nachricht (mit eingebauter Zustellungs-
+    /// Wiederholung bei fehlender Erreichbarkeit, siehe `ActiveWorkoutView.
+    /// sendStartRequest`) beim eigentlichen Trainingsstart zuverlässiger
+    /// ankommt als der reine Kontext-Sync.
+    public let restTimerEnabled: Bool
 
-    public init(sessionId: String, activityName: String) {
+    public init(sessionId: String, activityName: String, restTimerEnabled: Bool = false) {
         self.sessionId = sessionId
         self.activityName = activityName
+        self.restTimerEnabled = restTimerEnabled
     }
 }
 
@@ -127,6 +136,55 @@ public struct HeartRateUpdateDTO: Codable, Hashable {
     public init(sessionId: String, bpm: Double) {
         self.sessionId = sessionId
         self.bpm = bpm
+    }
+}
+
+/// Watch -> iPhone: Stand der Satzpausen-Überwachung, damit `ActiveWorkoutView`
+/// dieselbe Anzeige ("Pause: Xs") wie die Watch zeigen und bei Abschluss
+/// (`isActive` wird false) eine lokale Mitteilung auslösen kann.
+public struct RestTimerStatusDTO: Codable, Hashable {
+    public let sessionId: String
+    public let isActive: Bool
+    public let elapsedSeconds: Double
+
+    public init(sessionId: String, isActive: Bool, elapsedSeconds: Double) {
+        self.sessionId = sessionId
+        self.isActive = isActive
+        self.elapsedSeconds = elapsedSeconds
+    }
+}
+
+/// iPhone -> Watch: ein Satz wurde in einem ferngesteuerten Training gerade
+/// abgehakt - löst auf der Watch (die die Herzfrequenz misst) die HF-basierte
+/// Satzpausen-Überwachung aus (siehe `WorkoutManager.startRestMonitoringIfNeeded`).
+/// Beim lokal auf der Watch geloggten Training braucht es diese Nachricht
+/// nicht, da `WorkoutManager.logSet` direkt selbst auslöst.
+public struct RestTimerTriggerDTO: Codable, Hashable {
+    public let sessionId: String
+
+    public init(sessionId: String) {
+        self.sessionId = sessionId
+    }
+}
+
+/// Watch -> iPhone: der Nutzer hat einen Satz direkt auf der Watch abgehakt
+/// (ohne die iPhone-App zu öffnen, siehe `RemoteMonitoringView`). Die Watch
+/// kennt bei einem ferngesteuerten Training den Plan/die Satzliste nicht -
+/// das iPhone markiert deshalb selbst den nächsten noch offenen Satz als
+/// erledigt, in derselben Reihenfolge wie beim manuellen Abhaken dort.
+public struct RemoteSetCompletedDTO: Codable, Hashable {
+    public let sessionId: String
+    /// Eindeutig pro Tastendruck (nicht nur die Session-ID) - `ActiveWorkoutView`
+    /// erkennt neue Ereignisse über `.onChange(of:)`, das nur bei einer
+    /// tatsächlichen Wertänderung auslöst. Ohne dieses Feld wären zwei
+    /// Nachrichten für dieselbe Session strukturell identisch, ein zweiter
+    /// Tastendruck hätte also nie ausgelöst - es wäre immer beim ersten Satz
+    /// geblieben.
+    public let eventId: String
+
+    public init(sessionId: String, eventId: String = UUID().uuidString) {
+        self.sessionId = sessionId
+        self.eventId = eventId
     }
 }
 

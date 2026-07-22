@@ -1,4 +1,5 @@
 import SwiftUI
+import FitTrackShared
 
 /// Nachbildung von Stravas offiziellem "Connect with Strava"-Button (Farbe
 /// #FC4C02) - falls das originale Bild-Asset aus Stravas Brand-Guidelines
@@ -28,6 +29,12 @@ struct StravaSettingsView: View {
     /// `ActiveWorkoutView.roundToRealisticWeight`) - nicht jedes Fitnessstudio
     /// hat Hantelscheiben in 2,5-kg-Schritten, manche nur in 5-kg-Schritten.
     @AppStorage("warmupWeightIncrementKg") private var warmupWeightIncrementKg: Double = 2.5
+    /// Ob die Watch nach jedem abgehakten Satz per HF-basierter Satzpause
+    /// vibrieren soll, sobald der Körper erholt genug für den nächsten Satz
+    /// ist (siehe `WorkoutManager.startRestMonitoringIfNeeded`). Lebt hier
+    /// (statt auf der Watch selbst, die keine Settings-UI hat) und wird per
+    /// `WatchConnectivityManager` synchronisiert.
+    @AppStorage("restTimerEnabled") private var restTimerEnabled = false
 
     var body: some View {
         NavigationStack {
@@ -38,10 +45,14 @@ struct StravaSettingsView: View {
                         Text("5 kg").tag(5.0)
                     }
                     .pickerStyle(.segmented)
+                    Toggle("HF-basierter Satzpausen-Timer", isOn: $restTimerEnabled)
+                        .onChange(of: restTimerEnabled) { _, newValue in
+                            WatchConnectivityManager.shared.sendRestTimerPreference(newValue)
+                        }
                 } header: {
                     Text("Training")
                 } footer: {
-                    Text("Auf dieses Raster werden vorgeschlagene Aufwärmgewichte gerundet - praktisch, falls dein Studio keine 2,5-kg-Hantelscheiben hat.")
+                    Text("Auf dieses Raster werden vorgeschlagene Aufwärmgewichte gerundet - praktisch, falls dein Studio keine 2,5-kg-Hantelscheiben hat.\n\nDer Satzpausen-Timer lässt die Watch vibrieren, sobald deine Herzfrequenz nach einem Satz auf einen Erholungs-Richtwert gefallen ist (oder spätestens nach 4 Minuten).")
                 }
 
                 Section {
@@ -81,7 +92,7 @@ struct StravaSettingsView: View {
                     Section {
                         Toggle("Automatisch hochladen", isOn: $strava.autoUploadEnabled)
                     } footer: {
-                        Text("Jedes in FitTrack abgeschlossene Training (live oder nachgetragen) wird direkt automatisch auf Strava hochgeladen. Aus Apple Health importierte Einheiten (z.B. Läufe) sind davon ausgenommen, da Strava diese oft schon über den eigenen Health-Sync selbst findet. Zum manuellen Nachholen (z.B. bei ausgeschalteter Automatik oder älteren Trainings) im Verlauf nach links wischen.")
+                        Text("Jedes in FitTrack abgeschlossene Training (live oder nachgetragen) wird direkt automatisch auf Strava hochgeladen. Aus Apple Health importierte Einheiten (z.B. Läufe) sind davon ausgenommen, da Strava diese oft schon über den eigenen Health-Sync selbst findet. Zum manuellen Nachholen (z.B. bei ausgeschalteter Automatik oder älteren Trainings) im Verlauf nach rechts wischen.")
                     }
                 }
             }
