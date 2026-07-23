@@ -28,6 +28,15 @@ struct RemoteMonitoringView: View {
                     Label("\(Int(workoutManager.restElapsedSeconds))s Pause", systemImage: "heart.text.square")
                         .font(.headline)
                         .foregroundStyle(.orange)
+                    if let target = workoutManager.currentRestTargetHeartRate {
+                        Text("Ziel: \(Int(target)) bpm")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Ziel: fixe Wartezeit")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Button {

@@ -12,6 +12,24 @@ public extension FatigueLevel {
     }
 }
 
+public extension ShortTermReadiness {
+    var color: Color {
+        switch self {
+        case .noData: return .gray
+        case .recovering: return .orange
+        case .ready: return .green
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .noData: return "Keine Daten"
+        case .recovering(let hoursRemaining): return "Noch ~\(Int(hoursRemaining.rounded()))h"
+        case .ready: return "Bereit"
+        }
+    }
+}
+
 public extension ReadinessCategory {
     var color: Color {
         switch self {

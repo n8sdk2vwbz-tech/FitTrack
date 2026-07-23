@@ -146,11 +146,16 @@ public struct RestTimerStatusDTO: Codable, Hashable {
     public let sessionId: String
     public let isActive: Bool
     public let elapsedSeconds: Double
+    /// Angestrebte Herzfrequenz, ab der die Pause als beendet gilt (siehe
+    /// `WorkoutManager.restTargetHeartRate`) - v.a. zum Testen/Kalibrieren der
+    /// Formel auf dem iPhone/in der Live Activity mit angezeigt.
+    public let targetHeartRate: Double?
 
-    public init(sessionId: String, isActive: Bool, elapsedSeconds: Double) {
+    public init(sessionId: String, isActive: Bool, elapsedSeconds: Double, targetHeartRate: Double? = nil) {
         self.sessionId = sessionId
         self.isActive = isActive
         self.elapsedSeconds = elapsedSeconds
+        self.targetHeartRate = targetHeartRate
     }
 }
 

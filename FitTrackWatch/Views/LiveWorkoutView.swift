@@ -20,6 +20,15 @@ struct LiveWorkoutView: View {
                     Label("Pause: \(Int(workoutManager.restElapsedSeconds))s", systemImage: "heart.text.square")
                         .font(.caption)
                         .foregroundStyle(.orange)
+                    if let target = workoutManager.currentRestTargetHeartRate {
+                        Text("Ziel: \(Int(target)) bpm")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Ziel: fixe Wartezeit")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if let item = workoutManager.currentPlanItem {

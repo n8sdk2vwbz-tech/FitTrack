@@ -18,6 +18,18 @@ public enum FatigueLevel: String, Codable, Hashable {
     }
 }
 
+/// Kurzfristige Antwort auf "kann ich diesen Muskel HEUTE wieder trainieren"
+/// (siehe `MuscleLoadStatus.shortTermReadiness`) - bewusst als eigener Typ,
+/// getrennt von `FatigueLevel`/ACWR (das nur die längerfristige Trainings-
+/// konsistenz über Wochen bewertet und direkt nach einer harten Einheit
+/// fälschlich "optimal" anzeigen kann, obwohl der Muskel akut noch nicht
+/// erholt ist).
+public enum ShortTermReadiness: Hashable {
+    case noData
+    case recovering(hoursRemaining: Double)
+    case ready
+}
+
 public struct MuscleLoadStatus: Identifiable {
     public let muscle: MuscleGroup
     /// Kurzfristige Belastung, exponentiell gewichteter gleitender Schnitt über ca. 3 Tage.
@@ -28,17 +40,48 @@ public struct MuscleLoadStatus: Identifiable {
     public let acwr: Double
     public let fatigueLevel: FatigueLevel
     public let daysSinceLastTrained: Int?
+    /// Exakter Zeitpunkt der letzten Belastung (nicht auf den Kalendertag
+    /// gerundet wie `daysSinceLastTrained`) - Grundlage für den kurzfristigen
+    /// Erholungsstatus (siehe `recoveryHoursRemaining`), der z.B. "vor 3 Std.
+    /// trainiert" von einem tage-alten `daysSinceLastTrained == 0` unterscheiden
+    /// kann.
+    public let lastTrainedDate: Date?
 
-    public init(muscle: MuscleGroup, acuteLoad: Double, chronicLoad: Double, acwr: Double, fatigueLevel: FatigueLevel, daysSinceLastTrained: Int?) {
+    public init(muscle: MuscleGroup, acuteLoad: Double, chronicLoad: Double, acwr: Double, fatigueLevel: FatigueLevel, daysSinceLastTrained: Int?, lastTrainedDate: Date? = nil) {
         self.muscle = muscle
         self.acuteLoad = acuteLoad
         self.chronicLoad = chronicLoad
         self.acwr = acwr
         self.fatigueLevel = fatigueLevel
         self.daysSinceLastTrained = daysSinceLastTrained
+        self.lastTrainedDate = lastTrainedDate
     }
 
     public var id: MuscleGroup { muscle }
+
+    /// Stunden seit der letzten Belastung dieses Muskels - `nil` ohne
+    /// bekannten Zeitpunkt (siehe `lastTrainedDate`).
+    public func hoursSinceLastTrained(asOf: Date = .now) -> Double? {
+        guard let lastTrainedDate else { return nil }
+        return asOf.timeIntervalSince(lastTrainedDate) / 3600
+    }
+
+    /// Grobe verbleibende Stunden bis zur kurzfristigen Erholung (siehe
+    /// `MuscleGroup.typicalRecoveryHours`) - 0, sobald das Zeitfenster
+    /// abgelaufen ist. Bewusst getrennt von `fatigueLevel`/ACWR: das ist ein
+    /// Langfrist-Trainingskonsistenz-Indikator (Wochen), dieser Wert hier
+    /// beantwortet die kurzfristige Frage "seit wann/wie lange noch bis zur
+    /// Erholung von der LETZTEN Einheit".
+    public func recoveryHoursRemaining(asOf: Date = .now) -> Double? {
+        guard let hours = hoursSinceLastTrained(asOf: asOf) else { return nil }
+        return max(0, muscle.typicalRecoveryHours - hours)
+    }
+
+    /// Kurzfristiger "heute trainierbar?"-Status - siehe `ShortTermReadiness`.
+    public func shortTermReadiness(asOf: Date = .now) -> ShortTermReadiness {
+        guard let remaining = recoveryHoursRemaining(asOf: asOf) else { return .noData }
+        return remaining > 0 ? .recovering(hoursRemaining: remaining) : .ready
+    }
 }
 
 /// Leitet aus einer Historie von Belastungsimpulsen (`MuscleLoadEvent`) pro Muskel
@@ -126,13 +169,16 @@ public enum MuscleLoadCalculator {
             level = .highStrain
         }
 
+        let lastTrainedDate = events.filter { $0.volume > 0 }.map(\.date).max()
+
         return MuscleLoadStatus(
             muscle: muscle,
             acuteLoad: ewmaAcute,
             chronicLoad: ewmaChronic,
             acwr: acwr,
             fatigueLevel: level,
-            daysSinceLastTrained: daysSince
+            daysSinceLastTrained: daysSince,
+            lastTrainedDate: lastTrainedDate
         )
     }
 

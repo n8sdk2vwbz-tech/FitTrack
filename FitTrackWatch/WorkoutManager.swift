@@ -37,6 +37,12 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// `LiveWorkoutView`/`RemoteMonitoringView`.
     @Published var isRestTimerActive: Bool = false
     @Published var restElapsedSeconds: TimeInterval = 0
+    /// Snapshot von `restTargetHeartRate` beim Start der Pause - als
+    /// `@Published`-Property, damit `LiveWorkoutView`/`RemoteMonitoringView`
+    /// sowie (per `RestTimerStatusDTO`) das iPhone/die Live Activity den
+    /// gerade angestrebten Wert anzeigen können, v.a. zum Testen/Kalibrieren
+    /// der Formel hilfreich.
+    @Published var currentRestTargetHeartRate: Double?
 
     var planDay: PlanDayDTO?
 
@@ -339,6 +345,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         restTimerTask?.cancel()
         isRestTimerActive = true
         restElapsedSeconds = 0
+        currentRestTargetHeartRate = restTargetHeartRate
         let startedAt = Date()
         sendRestTimerStatusIfRemote()
 
@@ -362,21 +369,25 @@ final class WorkoutManager: NSObject, ObservableObject {
     private func sendRestTimerStatusIfRemote() {
         guard isRemoteControlled, let remoteSessionId else { return }
         WatchConnectivityManager.shared.sendRestTimerStatus(
-            RestTimerStatusDTO(sessionId: remoteSessionId, isActive: isRestTimerActive, elapsedSeconds: restElapsedSeconds)
+            RestTimerStatusDTO(sessionId: remoteSessionId, isActive: isRestTimerActive, elapsedSeconds: restElapsedSeconds, targetHeartRate: currentRestTargetHeartRate)
         )
     }
 
     private var restTargetHeartRate: Double? {
-        guard let restingHR = cachedRestingHeartRate else { return nil }
-        // Bevorzugt die tatsächliche Spitzen-HF des gerade beendeten Satzes
-        // als Obergrenze - nur falls die (noch) nicht vorliegt (z.B. beim
-        // allerersten Satz, bevor der erste HF-Sample eintraf), Rückfall auf
-        // den pauschalen alters-geschätzten Wert.
-        if let peak = restPeakHeartRateSnapshot, peak > restingHR {
-            return restingHR + restTargetHRRFraction * (peak - restingHR)
+        guard let restingHR = cachedRestingHeartRate,
+              let peak = restPeakHeartRateSnapshot, peak > restingHR else {
+            // Kein Rückfall mehr auf die pauschale alters-geschätzte HFmax:
+            // ein echter Test zeigte einen Zielwert von 131 bpm, obwohl die
+            // Herzfrequenz während des gesamten (ersten) Satzes nie über 80
+            // lag - die generische Schätzung passt oft nicht zur tatsächlichen
+            // Anstrengung. Ohne eine ECHTE gemessene Satz-Spitze (liegt beim
+            // allerersten Satz eines Trainings noch nicht vor) lieber auf die
+            // feste `restFallbackSeconds`-Wartezeit zurückfallen (siehe
+            // `isReadyForNextSet`), statt einen möglicherweise stark falschen
+            // HF-Zielwert vorzugeben.
+            return nil
         }
-        guard let maxHR = cachedMaxHeartRate, maxHR > restingHR else { return nil }
-        return restingHR + restTargetHRRFraction * (maxHR - restingHR)
+        return restingHR + restTargetHRRFraction * (peak - restingHR)
     }
 
     /// Siehe `restLowIntensityHRRFraction`-Kommentar: stieg die HF während des

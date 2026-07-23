@@ -56,6 +56,25 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
             return .cardio
         }
     }
+
+    /// Grober Richtwert, wie viele Stunden nach einer trainierten Einheit bis
+    /// zur Erholung vergehen - größere Muskelgruppen brauchen länger als
+    /// kleinere/isolierte (Forschung zu größenabhängigen Erholungsfenstern:
+    /// ca. 48h für kleinere, ca. 72h für größere Muskelgruppen bei einer
+    /// echten Trainingsbelastung, DOMS-Rückbildung bei Mehrgelenksübungen
+    /// nach ca. 72h). Bewusst ein grober Richtwert ohne Berücksichtigung der
+    /// tatsächlichen Intensität der letzten Einheit - siehe
+    /// `MuscleLoadStatus.recoveryHoursRemaining` für die Verwendung.
+    public var typicalRecoveryHours: Double {
+        switch self {
+        case .quads, .hamstrings, .glutes, .chest, .lats, .upperBack, .lowerBack:
+            return 72
+        case .biceps, .triceps, .shoulders, .forearms, .calves, .abs, .obliques, .traps, .neck:
+            return 48
+        case .cardio:
+            return 24
+        }
+    }
 }
 
 public enum BodyRegion: String, Codable, CaseIterable {

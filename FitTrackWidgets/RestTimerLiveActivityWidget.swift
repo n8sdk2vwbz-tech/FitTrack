@@ -32,9 +32,15 @@ struct RestTimerLiveActivityWidget: Widget {
                             Text("\(context.state.restElapsedSeconds)s")
                                 .font(.title2.bold())
                                 .foregroundStyle(.orange)
-                            Text("Pause")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                            if let target = context.state.restTargetHeartRate {
+                                Text("Ziel \(target) bpm")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("fixe Wartezeit")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     } else {
                         Text("Bereit")
@@ -85,6 +91,15 @@ private struct LockScreenRestTimerView: View {
                         Text("Pause: \(state.restElapsedSeconds)s")
                             .font(.subheadline)
                             .foregroundStyle(.orange)
+                        if let target = state.restTargetHeartRate {
+                            Text("Ziel: \(target) bpm")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Ziel: fixe Wartezeit")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
                     } else {
                         Text("Bereit für den nächsten Satz")
                             .font(.subheadline)

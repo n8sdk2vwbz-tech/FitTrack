@@ -15,6 +15,9 @@ public struct RestTimerActivityAttributes: ActivityAttributes {
         public var heartRate: Double
         public var isResting: Bool
         public var restElapsedSeconds: Int
+        /// Angestrebte Herzfrequenz, ab der die Pause als beendet gilt - v.a.
+        /// zum Testen/Kalibrieren der Formel mit angezeigt.
+        public var restTargetHeartRate: Int?
         /// Name der Übung des nächsten noch offenen Satzes - "Fertig", wenn
         /// keiner mehr offen ist (alle Sätze abgehakt).
         public var nextExerciseName: String
@@ -23,10 +26,11 @@ public struct RestTimerActivityAttributes: ActivityAttributes {
         public var nextSetIsWarmup: Bool
         public var hasNextSet: Bool
 
-        public init(heartRate: Double, isResting: Bool, restElapsedSeconds: Int, nextExerciseName: String, nextSetReps: Int, nextSetWeightKg: Double?, nextSetIsWarmup: Bool, hasNextSet: Bool) {
+        public init(heartRate: Double, isResting: Bool, restElapsedSeconds: Int, restTargetHeartRate: Int? = nil, nextExerciseName: String, nextSetReps: Int, nextSetWeightKg: Double?, nextSetIsWarmup: Bool, hasNextSet: Bool) {
             self.heartRate = heartRate
             self.isResting = isResting
             self.restElapsedSeconds = restElapsedSeconds
+            self.restTargetHeartRate = restTargetHeartRate
             self.nextExerciseName = nextExerciseName
             self.nextSetReps = nextSetReps
             self.nextSetWeightKg = nextSetWeightKg

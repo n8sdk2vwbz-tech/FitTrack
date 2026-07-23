@@ -6,6 +6,7 @@ struct DashboardView: View {
     @Query(sort: \WorkoutSession.date, order: .reverse) private var sessions: [WorkoutSession]
     @StateObject private var viewModel = DashboardViewModel()
     @State private var showingSettings = false
+    @State private var muscleDisplayMode: MuscleDisplayMode = .shortTerm
 
     var body: some View {
         NavigationStack {
@@ -25,9 +26,16 @@ struct DashboardView: View {
                         }
                     }
 
-                    CardioReadinessCard(status: viewModel.muscleStatuses[.cardio], readiness: viewModel.readiness)
+                    Picker("Ansicht", selection: $muscleDisplayMode) {
+                        ForEach(MuscleDisplayMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
 
-                    MuscleHeatmapView(statuses: viewModel.muscleStatuses, readiness: viewModel.readiness)
+                    CardioReadinessCard(status: viewModel.muscleStatuses[.cardio], readiness: viewModel.readiness, displayMode: muscleDisplayMode)
+
+                    MuscleHeatmapView(statuses: viewModel.muscleStatuses, readiness: viewModel.readiness, displayMode: $muscleDisplayMode)
                 }
                 .padding()
             }

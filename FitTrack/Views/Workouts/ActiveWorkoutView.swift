@@ -69,6 +69,15 @@ struct ActiveWorkoutView: View {
     @State private var completedSession: WorkoutSession?
     @State private var isRestTimerActive = false
     @State private var restElapsedSeconds: Double = 0
+    @State private var restTargetHeartRate: Double?
+    /// Übung, in der zuletzt ein Satz abgehakt wurde (manuell, per Watch-Button
+    /// oder Live Activity) - siehe `nextPendingSetIndexPath()`: wird bevorzugt
+    /// fortgesetzt, bevor wieder von vorne nach der nächsten offenen Übung
+    /// gesucht wird. Ohne das würde z.B. nach einem Satz in Übung 2 (weil das
+    /// Gerät für Übung 1 noch besetzt war) der nächste Watch-Tastendruck
+    /// wieder fälschlich den ersten offenen Satz in Übung 1 abhaken, statt in
+    /// der Übung weiterzumachen, die man tatsächlich begonnen hat.
+    @State private var lastCompletedExerciseIndex: Int?
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -109,14 +118,30 @@ struct ActiveWorkoutView: View {
                         HStack {
                             Label("Pause", systemImage: "heart.text.square")
                             Spacer()
-                            Text("\(Int(restElapsedSeconds))s")
-                                .monospacedDigit()
-                                .foregroundStyle(.orange)
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("\(Int(restElapsedSeconds))s")
+                                    .monospacedDigit()
+                                    .foregroundStyle(.orange)
+                                if let restTargetHeartRate {
+                                    Text("Ziel: \(Int(restTargetHeartRate)) bpm")
+                                        .font(.caption2)
+                                        .monospacedDigit()
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    // Kein HF-Ziel möglich, solange keine echte
+                                    // Satz-Spitze gemessen wurde (siehe
+                                    // `WorkoutManager.restTargetHeartRate`) -
+                                    // läuft stattdessen eine feste Wartezeit.
+                                    Text("Ziel: fixe Wartezeit")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
                 }
 
-                ForEach($liveExercises) { $live in
+                ForEach(Array($liveExercises.enumerated()), id: \.element.id) { exerciseIndex, $live in
                     Section {
                         if let last = WorkoutSession.mostRecentEntry(forExerciseId: live.exercise.id, in: allSessions) {
                             Text("Letztes Mal: \(last.summaryText)")
@@ -171,6 +196,7 @@ struct ActiveWorkoutView: View {
                                         // der synchronisierten Einstellung, ob
                                         // die Satzpausen-Überwachung startet.
                                         connectivity.sendRestTimerTrigger(RestTimerTriggerDTO(sessionId: sessionId))
+                                        lastCompletedExerciseIndex = exerciseIndex
                                     }
                                     refreshLiveActivity()
                                 } label: {
@@ -266,6 +292,7 @@ struct ActiveWorkoutView: View {
                 let wasActive = isRestTimerActive
                 isRestTimerActive = status.isActive
                 restElapsedSeconds = status.elapsedSeconds
+                restTargetHeartRate = status.targetHeartRate
                 if wasActive, !status.isActive {
                     notifyRestComplete()
                 }
@@ -439,38 +466,49 @@ struct ActiveWorkoutView: View {
     /// manuellen Abhaken hier in der Liste. Löst bewusst KEINEN erneuten
     /// `sendRestTimerTrigger` aus - die Watch hat ihre HF-Überwachung dafür
     /// bereits selbst gestartet.
-    private func completeNextPendingSet() {
+    /// Übung/Satz, der als nächstes abgehakt werden soll - bevorzugt die
+    /// Übung fort, in der zuletzt ein Satz abgehakt wurde (siehe
+    /// `lastCompletedExerciseIndex`, z.B. weil man mit einer späteren Übung
+    /// angefangen hat, da das Gerät für die erste noch besetzt war). Erst
+    /// wenn dort nichts mehr offen ist, wird wieder von vorne nach der
+    /// nächsten offenen Übung gesucht - das führt ganz natürlich auch zurück
+    /// zur ersten Übung, sobald die begonnene fertig ist.
+    private func nextPendingSetIndexPath() -> (exerciseIndex: Int, setIndex: Int)? {
+        if let index = lastCompletedExerciseIndex, liveExercises.indices.contains(index),
+           let setIndex = liveExercises[index].sets.firstIndex(where: { !$0.isCompleted }) {
+            return (index, setIndex)
+        }
         for exerciseIndex in liveExercises.indices {
             if let setIndex = liveExercises[exerciseIndex].sets.firstIndex(where: { !$0.isCompleted }) {
-                liveExercises[exerciseIndex].sets[setIndex].isCompleted = true
-                return
+                return (exerciseIndex, setIndex)
             }
         }
+        return nil
+    }
+
+    private func completeNextPendingSet() {
+        guard let path = nextPendingSetIndexPath() else { return }
+        liveExercises[path.exerciseIndex].sets[path.setIndex].isCompleted = true
+        lastCompletedExerciseIndex = path.exerciseIndex
     }
 
     /// Passt die Wiederholungen des nächsten noch offenen Satzes an - vom
     /// Stepper in der Live Activity ausgelöst (siehe `AdjustNextSetRepsIntent`).
     /// Nie unter 1 Wdh., damit der Stepper nicht auf 0 oder negativ laufen kann.
     private func adjustNextPendingSetReps(by delta: Int) {
-        for exerciseIndex in liveExercises.indices {
-            if let setIndex = liveExercises[exerciseIndex].sets.firstIndex(where: { !$0.isCompleted }) {
-                let current = liveExercises[exerciseIndex].sets[setIndex].reps
-                liveExercises[exerciseIndex].sets[setIndex].reps = max(1, current + delta)
-                return
-            }
-        }
+        guard let path = nextPendingSetIndexPath() else { return }
+        let current = liveExercises[path.exerciseIndex].sets[path.setIndex].reps
+        liveExercises[path.exerciseIndex].sets[path.setIndex].reps = max(1, current + delta)
     }
 
-    /// Info zum nächsten noch offenen Satz (Übung für Übung, darin Satz für
-    /// Satz) - Grundlage sowohl für `completeNextPendingSet`/
-    /// `adjustNextPendingSetReps` als auch für die Live-Activity-Anzeige.
+    /// Info zum nächsten noch offenen Satz - Grundlage sowohl für
+    /// `completeNextPendingSet`/`adjustNextPendingSetReps` als auch für die
+    /// Live-Activity-Anzeige.
     private var nextPendingSetInfo: (exerciseName: String, reps: Int, weightKg: Double?, isWarmup: Bool)? {
-        for live in liveExercises {
-            if let set = live.sets.first(where: { !$0.isCompleted }) {
-                return (live.exercise.name, set.reps, set.weightKg > 0 ? set.weightKg : nil, set.isWarmup)
-            }
-        }
-        return nil
+        guard let path = nextPendingSetIndexPath() else { return nil }
+        let live = liveExercises[path.exerciseIndex]
+        let set = live.sets[path.setIndex]
+        return (live.exercise.name, set.reps, set.weightKg > 0 ? set.weightKg : nil, set.isWarmup)
     }
 
     private func currentLiveActivityState() -> RestTimerActivityAttributes.ContentState {
@@ -479,6 +517,7 @@ struct ActiveWorkoutView: View {
             heartRate: latestHeartRate ?? 0,
             isResting: isRestTimerActive,
             restElapsedSeconds: Int(restElapsedSeconds),
+            restTargetHeartRate: restTargetHeartRate.map { Int($0) },
             nextExerciseName: next?.exerciseName ?? "Fertig",
             nextSetReps: next?.reps ?? 0,
             nextSetWeightKg: next?.weightKg,

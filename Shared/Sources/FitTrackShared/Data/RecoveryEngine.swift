@@ -297,6 +297,14 @@ public enum RecoveryEngine {
     /// Empfehlung pro Muskelgruppe: kombiniert die globale Bereitschaft mit dem
     /// spezifischen Ermüdungszustand dieses Muskels.
     public static func recommendation(for status: MuscleLoadStatus, readiness: ReadinessResult) -> String {
+        // Kurzfristige Erholung von der LETZTEN Einheit hat Vorrang vor der
+        // langfristigen ACWR-Einordnung unten - sonst könnte z.B. "optimal
+        // belastet" (ACWR) fälschlich "bereit fürs nächste Training" ausgeben,
+        // obwohl der Muskel erst vor Stunden trainiert wurde und laut
+        // `shortTermReadiness` noch mitten in der Erholung steckt.
+        if case .recovering(let hoursRemaining) = status.shortTermReadiness() {
+            return "Vor Kurzem trainiert – voraussichtlich noch ca. \(Int(hoursRemaining.rounded())) Std. bis zur Erholung."
+        }
         switch (status.fatigueLevel, readiness.category) {
         case (.noData, _):
             return "Noch keine Trainingsdaten für diese Muskelgruppe."
