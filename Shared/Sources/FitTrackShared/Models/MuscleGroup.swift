@@ -16,7 +16,6 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
     case hamstrings
     case calves
     case traps
-    case neck
     case cardio
 
     public var id: String { rawValue }
@@ -38,7 +37,6 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
         case .hamstrings: return "Beinbeuger"
         case .calves: return "Waden"
         case .traps: return "Nacken/Trapez"
-        case .neck: return "Nacken"
         case .cardio: return "Herz-Kreislauf"
         }
     }
@@ -46,7 +44,7 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
     /// Grobe Körperregion, u.a. für die Muskel-Heatmap-Darstellung.
     public var bodyRegion: BodyRegion {
         switch self {
-        case .chest, .shoulders, .triceps, .biceps, .forearms, .upperBack, .lats, .traps, .neck:
+        case .chest, .shoulders, .triceps, .biceps, .forearms, .upperBack, .lats, .traps:
             return .upperBody
         case .abs, .obliques, .lowerBack:
             return .core
@@ -69,7 +67,7 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .quads, .hamstrings, .glutes, .chest, .lats, .upperBack, .lowerBack:
             return 72
-        case .biceps, .triceps, .shoulders, .forearms, .calves, .abs, .obliques, .traps, .neck:
+        case .biceps, .triceps, .shoulders, .forearms, .calves, .abs, .obliques, .traps:
             return 48
         case .cardio:
             return 24

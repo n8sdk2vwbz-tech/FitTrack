@@ -127,7 +127,7 @@ public enum ExerciseLibrary {
         Exercise(id: "barbell-shrug", name: "Shrugs (Langhantel)", category: .strength, equipment: .barbell, primaryMuscles: [.traps], secondaryMuscles: [.forearms], instructions: "Schultern gerade nach oben ziehen, kurz halten, senken."),
         Exercise(id: "dumbbell-shrug", name: "Shrugs (Kurzhantel)", category: .strength, equipment: .dumbbell, primaryMuscles: [.traps], secondaryMuscles: [.forearms], instructions: "Kurzhanteln seitlich haltend die Schultern hochziehen."),
         Exercise(id: "cable-shrug", name: "Shrugs am Kabelzug", category: .strength, equipment: .cable, primaryMuscles: [.traps], secondaryMuscles: [.forearms], instructions: "Am Kabelzug mit geradem Rücken die Schultern gerade nach oben ziehen, kurz halten, kontrolliert senken."),
-        Exercise(id: "neck-flexion", name: "Nackenübung mit Band", category: .strength, equipment: .band, primaryMuscles: [.neck], secondaryMuscles: [], instructions: "Kopf gegen den Widerstand des Bandes langsam bewegen."),
+        Exercise(id: "neck-flexion", name: "Nackenübung mit Band", category: .strength, equipment: .band, primaryMuscles: [.traps], secondaryMuscles: [], instructions: "Kopf gegen den Widerstand des Bandes langsam bewegen."),
 
         // MARK: Cardio
         Exercise(id: "running", name: "Laufen", category: .cardio, equipment: .none, primaryMuscles: [.cardio], secondaryMuscles: [.quads, .hamstrings, .calves], instructions: "Gleichmäßiges Lauftempo im Zielpulsbereich halten."),
