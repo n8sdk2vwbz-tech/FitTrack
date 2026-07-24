@@ -303,10 +303,10 @@ final class WorkoutSession {
             guard baseVolume > 0 else { continue }
             let totalVolume = baseVolume * intensity
             for muscle in exercise.primaryMuscles {
-                events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume))
+                events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume, isPrimary: true))
             }
             for muscle in exercise.secondaryMuscles {
-                events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5))
+                events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5, isPrimary: false))
             }
         }
 
@@ -317,10 +317,10 @@ final class WorkoutSession {
             let totalVolume = (durationSeconds / 60.0) * Self.cardioLoadPerMinute * intensity
             if totalVolume > 0.01 {
                 for muscle in exercise.primaryMuscles {
-                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume))
+                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume, isPrimary: true))
                 }
                 for muscle in exercise.secondaryMuscles {
-                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5))
+                    events.append(MuscleLoadEvent(date: date, muscle: muscle, volume: totalVolume * 0.5, isPrimary: false))
                 }
             }
         }

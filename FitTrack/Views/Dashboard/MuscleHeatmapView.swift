@@ -205,10 +205,17 @@ struct MuscleDetailView: View {
                 } else {
                     LabeledContent("Zuletzt trainiert", value: "keine Daten")
                 }
+                if status.isRampingUp {
+                    Label("Wiedereinstieg nach ruhigerer Zeit", systemImage: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             } header: {
                 Text("Langfristig: Trainingskonsistenz")
             } footer: {
-                Text("Bewertet nur, ob die Trainingsfrequenz der letzten Wochen zu deinem eigenen Muster passt (weder Über- noch Unterbelastung) - sagt nichts über die akute Erholung von der letzten Einheit aus, siehe oben.")
+                Text(status.isRampingUp
+                     ? "Deine Belastung ist im Vergleich zu einer ruhigeren Phase gerade spürbar gestiegen - beim Wiedereinstieg normal, baue aber lieber schrittweise statt sprunghaft weiter auf. Sagt nichts über die akute Erholung von der letzten Einheit aus, siehe oben."
+                     : "Bewertet nur, ob die Trainingsfrequenz der letzten Wochen zu deinem eigenen Muster passt (weder Über- noch Unterbelastung) - sagt nichts über die akute Erholung von der letzten Einheit aus, siehe oben.")
             }
 
             if let readiness {

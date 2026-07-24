@@ -46,8 +46,16 @@ public struct MuscleLoadStatus: Identifiable {
     /// trainiert" von einem tage-alten `daysSinceLastTrained == 0` unterscheiden
     /// kann.
     public let lastTrainedDate: Date?
+    /// `true`, wenn die langfristige (28-Tage-)Basis aktuell deutlich unter
+    /// dem eigenen bisherigen Höchststand liegt (siehe `MuscleLoadCalculator`)
+    /// - d.h. ein hohes ACWR-Verhältnis kommt hier eher durch einen
+    /// Wiedereinstieg nach ruhigerer Zeit zustande als durch eine bereits
+    /// hohe Basis, auf die noch mehr draufkommt. Für die UI wichtig, damit
+    /// "Hohe Belastung" nicht fälschlich wie eine Übertrainings-Warnung
+    /// wirkt, obwohl gerade erst wieder gesteigert wird.
+    public let isRampingUp: Bool
 
-    public init(muscle: MuscleGroup, acuteLoad: Double, chronicLoad: Double, acwr: Double, fatigueLevel: FatigueLevel, daysSinceLastTrained: Int?, lastTrainedDate: Date? = nil) {
+    public init(muscle: MuscleGroup, acuteLoad: Double, chronicLoad: Double, acwr: Double, fatigueLevel: FatigueLevel, daysSinceLastTrained: Int?, lastTrainedDate: Date? = nil, isRampingUp: Bool = false) {
         self.muscle = muscle
         self.acuteLoad = acuteLoad
         self.chronicLoad = chronicLoad
@@ -55,6 +63,7 @@ public struct MuscleLoadStatus: Identifiable {
         self.fatigueLevel = fatigueLevel
         self.daysSinceLastTrained = daysSinceLastTrained
         self.lastTrainedDate = lastTrainedDate
+        self.isRampingUp = isRampingUp
     }
 
     public var id: MuscleGroup { muscle }
@@ -105,6 +114,17 @@ public enum MuscleLoadCalculator {
     /// es sich nur um einen Kaltstart-Effekt ohne echte Vergleichsbasis handelt.
     private static let minHistoryDaysForElevatedClassification = 14
 
+    /// Liegt die aktuelle chronische (28-Tage-)Basis unter diesem Anteil des
+    /// eigenen bisherigen Höchststands, gilt das als "Wiedereinstieg nach
+    /// ruhigerer Zeit" (siehe `MuscleLoadStatus.isRampingUp`) statt als
+    /// bereits hohe Basis, auf die zusätzlich draufkommt - ein hohes
+    /// ACWR-Verhältnis entsteht in diesem Fall vor allem durch den niedrigen
+    /// Nenner, nicht durch eine tatsächlich hohe Gesamtbelastung. Die
+    /// Einstufung wird dann um eine Stufe abgefedert (siehe unten), aber
+    /// nicht komplett unterdrückt - ein schneller Anstieg bleibt laut
+    /// ACWR-Forschung ein Risikofaktor, unabhängig vom Grund dafür.
+    private static let rampingUpChronicThreshold = 0.4
+
     public static func status(for events: [MuscleLoadEvent], asOf: Date = .now, calendar: Calendar = .current) -> [MuscleGroup: MuscleLoadStatus] {
         var result: [MuscleGroup: MuscleLoadStatus] = [:]
         let grouped = Dictionary(grouping: events, by: { $0.muscle })
@@ -133,6 +153,7 @@ public enum MuscleLoadCalculator {
 
         var ewmaAcute = 0.0
         var ewmaChronic = 0.0
+        var maxEverChronic = 0.0
         var cursor = firstDate
         var lastTrainedDay: Date?
 
@@ -141,6 +162,7 @@ public enum MuscleLoadCalculator {
             if volume > 0 { lastTrainedDay = cursor }
             ewmaAcute = volume * lambdaAcute + ewmaAcute * (1 - lambdaAcute)
             ewmaChronic = volume * lambdaChronic + ewmaChronic * (1 - lambdaChronic)
+            maxEverChronic = max(maxEverChronic, ewmaChronic)
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
             cursor = next
         }
@@ -156,7 +178,12 @@ public enum MuscleLoadCalculator {
         // unten im Status unverändert für Transparenz/Debugging erhalten.
         let classificationAcwr = hasEnoughHistory ? acwr : min(acwr, 1.3)
 
-        let level: FatigueLevel
+        // Siehe `rampingUpChronicThreshold`-Kommentar: ein hohes ACWR kommt
+        // hier eher vom niedrigen Nenner (ruhigere Vorzeit) als von bereits
+        // hoher Gesamtbelastung.
+        let isRampingUp = maxEverChronic > 0.01 && ewmaChronic < maxEverChronic * rampingUpChronicThreshold
+
+        var level: FatigueLevel
         if ewmaChronic <= 0.01 && ewmaAcute <= 0.01 {
             level = .noData
         } else if classificationAcwr < 0.8 {
@@ -168,8 +195,24 @@ public enum MuscleLoadCalculator {
         } else {
             level = .highStrain
         }
+        // Um eine Stufe abfedern statt komplett unterdrücken - ein schneller
+        // Anstieg bleibt ein Risikofaktor, soll aber nicht wie eine bereits
+        // bestehende Überlastung wirken, wenn die Basis dafür noch niedrig ist.
+        if isRampingUp {
+            if level == .highStrain { level = .elevated }
+            else if level == .elevated { level = .optimal }
+        }
 
-        let lastTrainedDate = events.filter { $0.volume > 0 }.map(\.date).max()
+        // Bevorzugt die letzte PRIMÄRE Belastung für die kurzfristige
+        // Erholungsuhr (siehe `recoveryHoursRemaining`) - sonst würde z.B. ein
+        // Lauf (Beine nur sekundär mit halbem Volumen mitbelastet) dieselbe
+        // 70+h-Uhr auslösen wie ein gezieltes Bein-Training, obwohl die
+        // tatsächliche Belastung für diesen Muskel dabei viel geringer war.
+        // Nur falls ein Muskel noch NIE primäres Ziel einer Übung war (z.B.
+        // Unterarme, die fast überall nur sekundär vorkommen), auf jede
+        // Belastung zurückfallen - besser eine grobe Angabe als gar keine.
+        let primaryEvents = events.filter { $0.isPrimary && $0.volume > 0 }
+        let lastTrainedDate = (primaryEvents.isEmpty ? events.filter { $0.volume > 0 } : primaryEvents).map(\.date).max()
 
         return MuscleLoadStatus(
             muscle: muscle,
@@ -178,7 +221,8 @@ public enum MuscleLoadCalculator {
             acwr: acwr,
             fatigueLevel: level,
             daysSinceLastTrained: daysSince,
-            lastTrainedDate: lastTrainedDate
+            lastTrainedDate: lastTrainedDate,
+            isRampingUp: isRampingUp
         )
     }
 

@@ -305,6 +305,14 @@ public enum RecoveryEngine {
         if case .recovering(let hoursRemaining) = status.shortTermReadiness() {
             return "Vor Kurzem trainiert – voraussichtlich noch ca. \(Int(hoursRemaining.rounded())) Std. bis zur Erholung."
         }
+        // Ein hohes ACWR-Verhältnis nach ruhigerer Vorzeit (Wiedereinstieg)
+        // ist kein Anzeichen bestehender Überlastung, sondern eher ein
+        // Hinweis, die Steigerung nicht zu abrupt zu forcieren - andere
+        // Formulierung als bei tatsächlich schon hoher Basis (siehe
+        // `MuscleLoadStatus.isRampingUp`).
+        if status.isRampingUp, status.fatigueLevel == .elevated || status.fatigueLevel == .highStrain {
+            return "Belastung steigt nach ruhigerer Zeit spürbar an – normal beim Wiedereinstieg, aber lieber schrittweise statt sprunghaft steigern."
+        }
         switch (status.fatigueLevel, readiness.category) {
         case (.noData, _):
             return "Noch keine Trainingsdaten für diese Muskelgruppe."

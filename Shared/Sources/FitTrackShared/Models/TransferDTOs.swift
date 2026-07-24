@@ -297,10 +297,19 @@ public struct MuscleLoadEvent: Codable, Hashable {
     public let date: Date
     public let muscle: MuscleGroup
     public let volume: Double
+    /// Ob dieser Muskel bei dieser Übung primäres Ziel war (statt nur mit
+    /// halbem Volumen sekundär mitbelastet, siehe
+    /// `WorkoutSession.muscleLoadEvents`) - z.B. Beine bei einem Lauf sind nur
+    /// sekundär betroffen. `MuscleLoadCalculator` nutzt das, um die
+    /// kurzfristige Erholungsuhr (siehe `recoveryHoursRemaining`) nicht schon
+    /// durch eine beiläufige Mitbelastung aus einer ganz anderen Trainingsart
+    /// neu zu starten.
+    public let isPrimary: Bool
 
-    public init(date: Date, muscle: MuscleGroup, volume: Double) {
+    public init(date: Date, muscle: MuscleGroup, volume: Double, isPrimary: Bool = true) {
         self.date = date
         self.muscle = muscle
         self.volume = volume
+        self.isPrimary = isPrimary
     }
 }
