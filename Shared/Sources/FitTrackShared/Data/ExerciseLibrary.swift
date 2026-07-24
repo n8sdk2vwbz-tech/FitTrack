@@ -88,7 +88,6 @@ public enum ExerciseLibrary {
         // MARK: Seitliche Bauchmuskeln
         Exercise(id: "side-plank", name: "Side Plank", category: .strength, equipment: .bodyweight, primaryMuscles: [.obliques], secondaryMuscles: [.abs], instructions: "Seitlicher Unterarmstütz, Hüfte anheben und halten."),
         Exercise(id: "cable-woodchopper", name: "Woodchopper (Kabel)", category: .strength, equipment: .cable, primaryMuscles: [.obliques], secondaryMuscles: [.abs], instructions: "Diagonale Zugbewegung von oben nach unten über den Körper."),
-        Exercise(id: "side-leg-raise", name: "Seitliches Beinheben", category: .strength, equipment: .bodyweight, primaryMuscles: [.obliques], secondaryMuscles: [.glutes], instructions: "Seitlich liegend das obere Bein kontrolliert anheben."),
 
         // MARK: Unterer Rücken
         Exercise(id: "good-morning", name: "Good Mornings", category: .strength, equipment: .barbell, primaryMuscles: [.lowerBack, .hamstrings], secondaryMuscles: [.glutes], instructions: "Langhantel im Nacken, Oberkörper aus der Hüfte nach vorne beugen."),
@@ -102,6 +101,14 @@ public enum ExerciseLibrary {
         Exercise(id: "glute-bridge", name: "Glute Bridge", category: .strength, equipment: .bodyweight, primaryMuscles: [.glutes], secondaryMuscles: [.hamstrings], instructions: "Rückenlage, Hüfte anheben und Gesäß anspannen."),
         Exercise(id: "cable-glute-kickback", name: "Kickback (Kabel)", category: .strength, equipment: .cable, primaryMuscles: [.glutes], secondaryMuscles: [.hamstrings], instructions: "Bein am Kabelzug nach hinten oben strecken."),
         Exercise(id: "sumo-deadlift", name: "Sumo-Kreuzheben", category: .strength, equipment: .barbell, primaryMuscles: [.glutes, .quads], secondaryMuscles: [.hamstrings, .lowerBack], instructions: "Breiter Stand, Langhantel mit geradem Rücken aufrichten."),
+
+        // MARK: Adduktoren / Abduktoren
+        Exercise(id: "adductor-machine", name: "Adduktorenmaschine", category: .strength, equipment: .machine, primaryMuscles: [.adductors], secondaryMuscles: [], instructions: "Sitzend die Beine gegen den Widerstand zusammenführen."),
+        Exercise(id: "abductor-machine", name: "Abduktorenmaschine", category: .strength, equipment: .machine, primaryMuscles: [.abductors], secondaryMuscles: [.glutes], instructions: "Sitzend die Beine gegen den Widerstand nach außen drücken."),
+        Exercise(id: "cable-hip-adduction", name: "Kabel Hüftadduktion", category: .strength, equipment: .cable, primaryMuscles: [.adductors], secondaryMuscles: [], instructions: "Fußschlaufe am unteren Kabelzug, Bein seitlich vor dem Standbein nach innen ziehen. Eingegebenes Gewicht gilt pro Seite.", isUnilateral: true),
+        Exercise(id: "cable-hip-abduction", name: "Kabel Hüftabduktion", category: .strength, equipment: .cable, primaryMuscles: [.abductors], secondaryMuscles: [.glutes], instructions: "Fußschlaufe am unteren Kabelzug, Bein seitlich vom Körper wegdrücken. Eingegebenes Gewicht gilt pro Seite.", isUnilateral: true),
+        Exercise(id: "side-leg-raise", name: "Seitliches Beinheben", category: .strength, equipment: .bodyweight, primaryMuscles: [.abductors], secondaryMuscles: [.glutes], instructions: "Seitlich liegend das obere Bein kontrolliert anheben."),
+        Exercise(id: "lying-hip-adduction", name: "Adduktion liegend", category: .strength, equipment: .bodyweight, primaryMuscles: [.adductors], secondaryMuscles: [], instructions: "Seitlich liegend das untere Bein gegen die Schwerkraft anheben, oberes Bein angewinkelt aufgestellt."),
 
         // MARK: Quadrizeps
         Exercise(id: "leg-press", name: "Beinpresse", category: .strength, equipment: .machine, primaryMuscles: [.quads], secondaryMuscles: [.glutes], instructions: "Plattform aus tiefer Beugung nach oben drücken."),

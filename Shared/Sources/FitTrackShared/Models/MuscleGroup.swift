@@ -15,6 +15,8 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
     case quads
     case hamstrings
     case calves
+    case adductors
+    case abductors
     case traps
     case cardio
 
@@ -36,6 +38,8 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
         case .quads: return "Quadrizeps"
         case .hamstrings: return "Beinbeuger"
         case .calves: return "Waden"
+        case .adductors: return "Adduktoren"
+        case .abductors: return "Abduktoren"
         case .traps: return "Nacken/Trapez"
         case .cardio: return "Herz-Kreislauf"
         }
@@ -48,7 +52,7 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
             return .upperBody
         case .abs, .obliques, .lowerBack:
             return .core
-        case .glutes, .quads, .hamstrings, .calves:
+        case .glutes, .quads, .hamstrings, .calves, .adductors, .abductors:
             return .lowerBody
         case .cardio:
             return .cardio
@@ -67,7 +71,7 @@ public enum MuscleGroup: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .quads, .hamstrings, .glutes, .chest, .lats, .upperBack, .lowerBack:
             return 72
-        case .biceps, .triceps, .shoulders, .forearms, .calves, .abs, .obliques, .traps:
+        case .biceps, .triceps, .shoulders, .forearms, .calves, .abs, .obliques, .traps, .adductors, .abductors:
             return 48
         case .cardio:
             return 24

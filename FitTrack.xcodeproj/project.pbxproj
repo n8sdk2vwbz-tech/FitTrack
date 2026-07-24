@@ -107,7 +107,7 @@
 		053108AC8BBB9B65EBA44741 /* FitTrack.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FitTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		06A9C68AF68E2C93C51E50EF /* ExerciseMultiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseMultiPickerView.swift; sourceTree = "<group>"; };
 		06BC6733088F129EF3878DAB /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
-		08F2E63D3FAFD0F059A271B1 /* Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Shared; sourceTree = SOURCE_ROOT; };
+		08F2E63D3FAFD0F059A271B1 /* Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shared; path = Shared; sourceTree = SOURCE_ROOT; };
 		0EB6D74DC3DB7E80C889336A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		125578C49FC616DBEE8F83AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		13EAED7CD25B3806A9831FC3 /* SharePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePlanView.swift; sourceTree = "<group>"; };
@@ -127,7 +127,7 @@
 		3DD45828C99CD50A0752E100 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3EE1161AF6699C65A32E45B9 /* MuscleHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleHeatmapView.swift; sourceTree = "<group>"; };
 		45AC20A80C5B115A61B5486A /* ImportPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPlanView.swift; sourceTree = "<group>"; };
-		4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FitTrackWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B3F51240B6A73CAE26A33B0 /* FitTrackWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FitTrackWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5302754DE0308CEBF15F484A /* StravaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaManager.swift; sourceTree = "<group>"; };
 		55458F2FF281E4BF301C4BB3 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5A9BA009D449DCAD1659B9CD /* FitTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitTrack.entitlements; sourceTree = "<group>"; };
@@ -476,9 +476,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					563C6831FBBB8C2021E9C8FB = {
+						DevelopmentTeam = 8936F2R3FF;
+						ProvisioningStyle = Automatic;
+					};
+					B239314CFF49FAD6F35F99BA = {
 						DevelopmentTeam = 8936F2R3FF;
 						ProvisioningStyle = Automatic;
 					};
@@ -634,9 +638,6 @@
 		395EC1033F28C08022BD0EEF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8936F2R3FF;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FitTrackWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -645,7 +646,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.widgets;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -655,9 +655,6 @@
 		4C1D1CE3EC9E7EB06AB377B1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8936F2R3FF;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FitTrackWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -666,7 +663,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.maximtschitschko.fittrack.widgets;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
