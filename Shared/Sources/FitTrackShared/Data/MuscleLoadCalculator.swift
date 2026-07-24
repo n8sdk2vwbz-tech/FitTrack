@@ -46,13 +46,16 @@ public struct MuscleLoadStatus: Identifiable {
     /// trainiert" von einem tage-alten `daysSinceLastTrained == 0` unterscheiden
     /// kann.
     public let lastTrainedDate: Date?
-    /// `true`, wenn die langfristige (28-Tage-)Basis aktuell deutlich unter
-    /// dem eigenen bisherigen Höchststand liegt (siehe `MuscleLoadCalculator`)
-    /// - d.h. ein hohes ACWR-Verhältnis kommt hier eher durch einen
-    /// Wiedereinstieg nach ruhigerer Zeit zustande als durch eine bereits
-    /// hohe Basis, auf die noch mehr draufkommt. Für die UI wichtig, damit
-    /// "Hohe Belastung" nicht fälschlich wie eine Übertrainings-Warnung
-    /// wirkt, obwohl gerade erst wieder gesteigert wird.
+    /// `true`, wenn sich die langfristige (28-Tage-)Basis in den letzten
+    /// `rampingUpLookbackDays` Tagen deutlich verändert hat (siehe
+    /// `MuscleLoadCalculator`) - egal ob durch Wiedereinstieg nach
+    /// ruhigerer Zeit ODER durch erstmaligen Aufbau einer bisher kaum
+    /// trainierten Muskelgruppe. In beiden Fällen kommt ein hohes
+    /// ACWR-Verhältnis eher durch einen gerade erst im Umbruch befindlichen
+    /// Nenner zustande als durch eine bereits stabile hohe Basis, auf die
+    /// noch mehr draufkommt. Für die UI wichtig, damit "Hohe Belastung"
+    /// nicht fälschlich wie eine Übertrainings-Warnung wirkt, obwohl gerade
+    /// erst wieder/zum ersten Mal gesteigert wird.
     public let isRampingUp: Bool
 
     public init(muscle: MuscleGroup, acuteLoad: Double, chronicLoad: Double, acwr: Double, fatigueLevel: FatigueLevel, daysSinceLastTrained: Int?, lastTrainedDate: Date? = nil, isRampingUp: Bool = false) {
@@ -114,16 +117,31 @@ public enum MuscleLoadCalculator {
     /// es sich nur um einen Kaltstart-Effekt ohne echte Vergleichsbasis handelt.
     private static let minHistoryDaysForElevatedClassification = 14
 
-    /// Liegt die aktuelle chronische (28-Tage-)Basis unter diesem Anteil des
-    /// eigenen bisherigen Höchststands, gilt das als "Wiedereinstieg nach
+    /// Vergleichszeitraum für die Wiedereinstiegs-Erkennung (siehe
+    /// `MuscleLoadStatus.isRampingUp`): die chronische Basis von JETZT wird
+    /// mit der von vor `rampingUpLookbackDays` Tagen verglichen. Bewusst
+    /// gegen einen festen Zeitpunkt in der Vergangenheit statt gegen den
+    /// eigenen historischen Höchststand (`maxEverChronic`) - ein reiner
+    /// Höchststand-Vergleich erkennt nur "war mal höher, jetzt wieder
+    /// niedriger, jetzt wieder im Aufbau", verpasst aber den mindestens
+    /// genauso häufigen Fall "wurde noch NIE nennenswert trainiert und baut
+    /// gerade zum ERSTEN Mal auf" - dort ist die aktuelle chronische Basis
+    /// selbst der bisherige Höchststand (monoton steigend), der alte
+    /// Vergleich würde also nie auslösen.
+    private static let rampingUpLookbackDays = 21.0
+
+    /// Weichen "jetzt" und "vor `rampingUpLookbackDays` Tagen" um mehr als
+    /// diesen Faktor voneinander ab (in JEDE Richtung: deutlich höher ODER
+    /// deutlich niedriger als vorher), gilt das als "Wiedereinstieg nach
     /// ruhigerer Zeit" (siehe `MuscleLoadStatus.isRampingUp`) statt als
-    /// bereits hohe Basis, auf die zusätzlich draufkommt - ein hohes
-    /// ACWR-Verhältnis entsteht in diesem Fall vor allem durch den niedrigen
-    /// Nenner, nicht durch eine tatsächlich hohe Gesamtbelastung. Die
-    /// Einstufung wird dann um eine Stufe abgefedert (siehe unten), aber
-    /// nicht komplett unterdrückt - ein schneller Anstieg bleibt laut
-    /// ACWR-Forschung ein Risikofaktor, unabhängig vom Grund dafür.
-    private static let rampingUpChronicThreshold = 0.4
+    /// bereits stabile hohe Basis, auf die zusätzlich draufkommt - ein hohes
+    /// ACWR-Verhältnis entsteht in diesem Fall vor allem durch einen gerade
+    /// erst im Umbruch befindlichen Nenner, nicht durch eine tatsächlich
+    /// stabile hohe Gesamtbelastung. Die Einstufung wird dann um eine Stufe
+    /// abgefedert (siehe unten), aber nicht komplett unterdrückt - ein
+    /// schneller Anstieg bleibt laut ACWR-Forschung ein Risikofaktor,
+    /// unabhängig vom Grund dafür.
+    private static let rampingUpChronicThreshold = 0.5
 
     public static func status(for events: [MuscleLoadEvent], asOf: Date = .now, calendar: Calendar = .current) -> [MuscleGroup: MuscleLoadStatus] {
         var result: [MuscleGroup: MuscleLoadStatus] = [:]
@@ -151,9 +169,12 @@ public enum MuscleLoadCalculator {
         let lambdaAcute = 2.0 / (acuteSpanDays + 1.0)
         let lambdaChronic = 2.0 / (chronicSpanDays + 1.0)
 
+        let lookbackDate = calendar.date(byAdding: .day, value: -Int(rampingUpLookbackDays), to: today) ?? today
+
         var ewmaAcute = 0.0
         var ewmaChronic = 0.0
-        var maxEverChronic = 0.0
+        var ewmaChronicAtLookback = 0.0
+        var passedLookback = false
         var cursor = firstDate
         var lastTrainedDay: Date?
 
@@ -162,10 +183,14 @@ public enum MuscleLoadCalculator {
             if volume > 0 { lastTrainedDay = cursor }
             ewmaAcute = volume * lambdaAcute + ewmaAcute * (1 - lambdaAcute)
             ewmaChronic = volume * lambdaChronic + ewmaChronic * (1 - lambdaChronic)
-            maxEverChronic = max(maxEverChronic, ewmaChronic)
+            if !passedLookback && cursor >= lookbackDate {
+                ewmaChronicAtLookback = ewmaChronic
+                passedLookback = true
+            }
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
             cursor = next
         }
+        if !passedLookback { ewmaChronicAtLookback = ewmaChronic }
 
         let acwr = ewmaChronic > 0.01 ? ewmaAcute / ewmaChronic : (ewmaAcute > 0 ? 2.0 : 0)
         let daysSince = lastTrainedDay.flatMap { calendar.dateComponents([.day], from: $0, to: today).day }
@@ -178,10 +203,18 @@ public enum MuscleLoadCalculator {
         // unten im Status unverändert für Transparenz/Debugging erhalten.
         let classificationAcwr = hasEnoughHistory ? acwr : min(acwr, 1.3)
 
-        // Siehe `rampingUpChronicThreshold`-Kommentar: ein hohes ACWR kommt
-        // hier eher vom niedrigen Nenner (ruhigere Vorzeit) als von bereits
+        // Siehe `rampingUpChronicThreshold`-Kommentar: weicht die aktuelle
+        // chronische Basis stark von der vor `rampingUpLookbackDays` Tagen ab
+        // (in beide Richtungen), ist der Nenner gerade erst im Umbruch statt
+        // stabil hoch - ein hohes ACWR kommt dann eher daher als von bereits
         // hoher Gesamtbelastung.
-        let isRampingUp = maxEverChronic > 0.01 && ewmaChronic < maxEverChronic * rampingUpChronicThreshold
+        let chronicDivergenceRatio: Double = {
+            let lo = min(ewmaChronic, ewmaChronicAtLookback)
+            let hi = max(ewmaChronic, ewmaChronicAtLookback)
+            guard hi > 0.01 else { return 1.0 }
+            return lo / hi
+        }()
+        let isRampingUp = ewmaChronic > 0.01 && chronicDivergenceRatio < rampingUpChronicThreshold
 
         var level: FatigueLevel
         if ewmaChronic <= 0.01 && ewmaAcute <= 0.01 {

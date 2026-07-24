@@ -115,6 +115,7 @@ struct CardioReadinessCard: View {
             let secondaryLabel = displayMode == .shortTerm
                 ? "Trainingskonsistenz: \(status.fatigueLevel.displayName)"
                 : "Kurzfristig: \(shortTerm.label)"
+            let showRampingUpHint = displayMode == .longTerm && status.isRampingUp
             NavigationLink {
                 MuscleDetailView(status: status, readiness: self.readiness)
             } label: {
@@ -132,6 +133,11 @@ struct CardioReadinessCard: View {
                         Text(secondaryLabel)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
+                        if showRampingUpHint {
+                            Label("Wiedereinstieg nach ruhigerer Zeit", systemImage: "arrow.up.right")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                        }
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -155,6 +161,7 @@ private struct MuscleCell: View {
     private var primaryColor: Color { displayMode == .shortTerm ? shortTerm.color : status.fatigueLevel.color }
     private var primaryLabel: String { displayMode == .shortTerm ? shortTerm.label : status.fatigueLevel.displayName }
     private var secondaryLabel: String { displayMode == .shortTerm ? status.fatigueLevel.displayName : shortTerm.label }
+    private var showRampingUpHint: Bool { displayMode == .longTerm && status.isRampingUp }
 
     var body: some View {
         VStack(spacing: 4) {
@@ -164,13 +171,25 @@ private struct MuscleCell: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
-            Text(primaryLabel)
-                .font(.caption2)
-                .fontWeight(.semibold)
-                .foregroundStyle(primaryColor)
+            HStack(spacing: 3) {
+                if showRampingUpHint {
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
+                Text(primaryLabel)
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(primaryColor)
+            }
             Text(secondaryLabel)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+            if showRampingUpHint {
+                Text("Wiedereinstieg")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 70)
         .padding(8)
